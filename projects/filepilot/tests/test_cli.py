@@ -1,25 +1,8 @@
 """T2: contrato de invocación y código uno del uso incorrecto (RF-2, RF-3)."""
 
-import os
-import subprocess
-import sys
-
 import pytest
 
 from filepilot.cli import crear_analizador
-
-
-def ejecutar(argumentos, directorio):
-    """Invoca la aplicación como módulo desde un directorio ajeno al proyecto."""
-    return subprocess.run(
-        [sys.executable, "-m", "filepilot", *argumentos],
-        cwd=directorio,
-        capture_output=True,
-        # Usa la misma codificación al escribir y leer la salida capturada.
-        env={**os.environ, "PYTHONIOENCODING": "utf-8"},
-        encoding="utf-8",
-    )
-
 
 # Fragmentos en inglés que `argparse` emitiría sin traducción (RNF-3).
 RASTROS_EN_INGLES = (
@@ -50,8 +33,8 @@ CASOS_DE_USO_INCORRECTO = [
 
 
 @pytest.mark.parametrize("argumentos, causa", CASOS_DE_USO_INCORRECTO)
-def test_uso_incorrecto_termina_en_uno(argumentos, causa, tmp_path):
-    resultado = ejecutar(argumentos, tmp_path)
+def test_uso_incorrecto_termina_en_uno(ejecutar_modulo, argumentos, causa, tmp_path):
+    resultado = ejecutar_modulo(argumentos, tmp_path)
 
     assert resultado.returncode == 1, f"código inesperado con {argumentos}"
     assert resultado.stderr.startswith("uso: ")
@@ -60,9 +43,9 @@ def test_uso_incorrecto_termina_en_uno(argumentos, causa, tmp_path):
 
 
 @pytest.mark.parametrize("argumentos, causa", CASOS_DE_USO_INCORRECTO)
-def test_diagnostico_en_espanol(argumentos, causa, tmp_path):
+def test_diagnostico_en_espanol(ejecutar_modulo, argumentos, causa, tmp_path):
     """Ni la causa ni la línea de uso conservan el texto original en inglés."""
-    resultado = ejecutar(argumentos, tmp_path)
+    resultado = ejecutar_modulo(argumentos, tmp_path)
 
     encontrados = [rastro for rastro in RASTROS_EN_INGLES if rastro in resultado.stderr]
 
@@ -76,8 +59,8 @@ def test_mensaje_sin_traduccion_conocida_no_deja_ingles():
 
 
 @pytest.mark.parametrize("argumentos", [["--help"], ["analizar", "--help"]])
-def test_ayuda_termina_en_cero(argumentos, tmp_path):
-    resultado = ejecutar(argumentos, tmp_path)
+def test_ayuda_termina_en_cero(ejecutar_modulo, argumentos, tmp_path):
+    resultado = ejecutar_modulo(argumentos, tmp_path)
 
     assert resultado.returncode == 0
     assert "analizar" in resultado.stdout

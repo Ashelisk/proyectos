@@ -1,26 +1,12 @@
 """T1: la aplicación instalada arranca por sus dos vías y muestra su ayuda."""
 
-import os
-import subprocess
 import sys
 import sysconfig
 from pathlib import Path
 
 
-def ejecutar(orden, directorio):
-    """Ejecuta la orden desde `directorio`, ajeno al proyecto."""
-    return subprocess.run(
-        orden,
-        cwd=directorio,
-        capture_output=True,
-        # Usa la misma codificación al escribir y leer la salida capturada.
-        env={**os.environ, "PYTHONIOENCODING": "utf-8"},
-        encoding="utf-8",
-    )
-
-
-def test_modulo_muestra_ayuda(tmp_path):
-    resultado = ejecutar([sys.executable, "-m", "filepilot", "--help"], tmp_path)
+def test_modulo_muestra_ayuda(ejecutar_modulo, tmp_path):
+    resultado = ejecutar_modulo(["--help"], tmp_path)
 
     assert resultado.returncode == 0
     assert "filepilot" in resultado.stdout
@@ -41,13 +27,13 @@ def rutas_de_la_orden():
     return [del_interprete, Path(sysconfig.get_path("scripts", esquema_de_usuario)) / nombre]
 
 
-def test_orden_instalada_muestra_ayuda(tmp_path):
+def test_orden_instalada_muestra_ayuda(ejecutar_orden, tmp_path):
     candidatas = rutas_de_la_orden()
     instaladas = [ruta for ruta in candidatas if ruta.is_file()]
     assert instaladas, f"Falta el ejecutable del entorno bajo prueba: {candidatas}"
     orden = instaladas[0]
 
-    resultado = ejecutar([orden, "--help"], tmp_path)
+    resultado = ejecutar_orden([orden, "--help"], tmp_path)
 
     assert resultado.returncode == 0
     assert "filepilot" in resultado.stdout

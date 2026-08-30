@@ -1,11 +1,16 @@
 """Entrada de línea de órdenes de FilePilot."""
 
 import argparse
+import errno
+import os
 import re
+import stat
 import sys
+from pathlib import Path
 
 DESCRIPCION = "Analiza una carpeta y muestra la organización que propondría, sin modificar nada."
 CODIGO_USO_INCORRECTO = 1
+CODIGO_RUTA_INVALIDA = 2
 
 # `argparse` redacta sus diagnósticos en inglés; RNF-3 los exige en español.
 TRADUCCIONES = (
@@ -85,9 +90,92 @@ def crear_analizador() -> AnalizadorDeOrdenes:
     return analizador
 
 
+class RutaInvalida(Exception):
+    """La ruta indicada no puede analizarse; su texto describe la causa (RF-11)."""
+
+
+# Causas en español a partir del código del fallo, no del idioma del sistema.
+FALLOS_CONOCIDOS = {
+    errno.EACCES: "permiso denegado",
+    errno.EPERM: "operación no permitida",
+    errno.ENOENT: "no existe",
+    errno.ENOTDIR: "no es un directorio",
+    errno.ELOOP: "demasiados enlaces simbólicos encadenados",
+    errno.ENAMETOOLONG: "el nombre es demasiado largo",
+    errno.EIO: "error de entrada y salida",
+}
+
+
+def describir_fallo(fallo: OSError) -> str:
+    """Describe en español la causa de un fallo del sistema de archivos."""
+    conocida = FALLOS_CONOCIDOS.get(fallo.errno)
+    if conocida:
+        return conocida
+    if fallo.errno is None:
+        return "error del sistema"
+    return f"error del sistema (código {fallo.errno})"
+
+
+def citar(ruta: str, destino: Path) -> str:
+    """Cita la ruta tal como se indicó y, si es un enlace, también su destino."""
+    if os.path.islink(ruta):
+        return f"«{ruta}» (enlace a «{destino}»)"
+    return f"«{ruta}»"
+
+
+def resolver_raiz(ruta: str) -> Path:
+    """Devuelve el directorio legible que se va a analizar (RF-11, RF-16).
+
+    Sigue los enlaces antes de comprobar el destino, de modo que una raíz
+    enlazada se analiza en su ubicación real. La raíz no se descarta por estar
+    oculta: las exclusiones se aplican a su contenido (RF-14).
+    """
+    if not ruta:
+        raise RutaInvalida("la ruta indicada está vacía")
+
+    try:
+        destino = Path(ruta).resolve()
+    except OSError as fallo:
+        raise RutaInvalida(f"no se puede resolver la ruta «{ruta}»: {describir_fallo(fallo)}") from fallo
+
+    referencia = citar(ruta, destino)
+    try:
+        informacion = destino.stat()
+    except FileNotFoundError as fallo:
+        raise RutaInvalida(f"la ruta {referencia} no existe") from fallo
+    except NotADirectoryError as fallo:
+        # Un componente intermedio no es un directorio, como en `notas.txt/sub`.
+        raise RutaInvalida(f"la ruta {referencia} no es un directorio") from fallo
+    except PermissionError as fallo:
+        raise RutaInvalida(f"no se puede leer la ruta {referencia}: permiso denegado") from fallo
+    except OSError as fallo:
+        raise RutaInvalida(f"no se puede leer la ruta {referencia}: {describir_fallo(fallo)}") from fallo
+
+    if not stat.S_ISDIR(informacion.st_mode):
+        raise RutaInvalida(f"la ruta {referencia} no es un directorio")
+
+    # Enumerar una entrada comprueba el acceso sin abrir el contenido (RF-10).
+    try:
+        with os.scandir(destino) as entradas:
+            next(entradas, None)
+    except PermissionError as fallo:
+        raise RutaInvalida(f"no se puede leer la carpeta {referencia}: permiso denegado") from fallo
+    except OSError as fallo:
+        raise RutaInvalida(f"no se puede leer la carpeta {referencia}: {describir_fallo(fallo)}") from fallo
+
+    return destino
+
+
 def main(argv: list[str] | None = None) -> int:
     """Punto de entrada. Devuelve el código de salida del proceso."""
     analizador = crear_analizador()
-    analizador.parse_args(argv)
-    # T3 valida la ruta indicada; T8 conecta recorrido e informe.
+    opciones = analizador.parse_args(argv)
+
+    try:
+        resolver_raiz(opciones.ruta)
+    except RutaInvalida as problema:
+        print(f"filepilot: error: {problema}", file=sys.stderr)
+        return CODIGO_RUTA_INVALIDA
+
+    # T5 a T8 recorren la raíz resuelta y componen el informe.
     return 0
