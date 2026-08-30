@@ -14,19 +14,48 @@ Persona que administra sus propios archivos desde la terminal, en Linux, macOS o
 
 ## Requisitos funcionales
 
+### Invocación y recorrido
+
 - RF-1: Cuando se ejecute `filepilot analizar <ruta>` sobre un directorio legible, la herramienta emitirá en la salida estándar un informe de su contenido y terminará con código cero.
-- RF-2: Si se omite la ruta, la herramienta mostrará el uso del comando en la salida de error y terminará con código distinto de cero, sin analizar ningún directorio.
-- RF-3: Por defecto solo se examinarán los elementos del primer nivel del directorio indicado. Cuando se use la opción `--recursivo`, se examinarán también los de todas sus subcarpetas.
-- RF-4: Las subcarpetas nunca se clasificarán como archivos. El informe indicará cuántas se encontraron; en modo recursivo, cuántas se recorrieron.
-- RF-5: Cada archivo examinado se asignará a una de seis categorías según su extensión, sin distinguir mayúsculas de minúsculas: imágenes, documentos, vídeo, audio, comprimidos y otros. La extensión no reconocida sitúa el archivo en «otros».
+- RF-2: Ante un uso incorrecto —ruta omitida u opción desconocida—, la herramienta mostrará el uso del comando en la salida de error y terminará con código uno, sin analizar ningún directorio.
+- RF-3: Por defecto solo se examinarán los elementos del primer nivel del directorio indicado. Cuando se use la opción `--recursivo`, se examinarán también los de todas sus subcarpetas no excluidas.
+- RF-4: Las subcarpetas nunca se clasificarán como archivos. El informe indicará cuántas se encontraron y, en modo recursivo, cuántas se recorrieron. Una subcarpeta que no se recorre por exclusión se cuenta entre las encontradas y además como una única entrada omitida, sin estimar su contenido.
+- RF-16: Cuando la ruta indicada sea un enlace simbólico a un directorio, se resolverá y se analizará su destino. La exclusión de enlaces de RF-9 se aplica únicamente a los elementos encontrados durante el recorrido.
+
+### Clasificación
+
+- RF-5: Cada archivo examinado se asignará a una de seis categorías según su última extensión, sin distinguir mayúsculas de minúsculas, conforme a este mapa. Una extensión no incluida sitúa el archivo en «otros».
+
+  | Categoría | Extensiones |
+  | --- | --- |
+  | Imágenes | jpg, jpeg, png, gif, bmp, webp, tiff, svg, heic |
+  | Documentos | pdf, doc, docx, odt, rtf, txt, md, xls, xlsx, ods, csv, ppt, pptx, odp, epub |
+  | Vídeo | mp4, mkv, avi, mov, wmv, webm, mpg, mpeg |
+  | Audio | mp3, wav, flac, aac, ogg, m4a, wma |
+  | Comprimidos | zip, rar, 7z, tar, gz, bz2, xz |
+  | Otros | cualquier otra extensión |
+
+  El mapa es ampliable: añadir o mover una extensión cambia el comportamiento observable y exige actualizar antes este requisito.
+
 - RF-6: Los archivos sin extensión formarán el grupo «sin extensión», independiente de «otros».
-- RF-7: El informe presentará una fila por grupo con recuento de archivos, tamaño total y la carpeta de destino que se propondría para ese grupo, más una fila de totales. Los grupos sin archivos podrán omitirse de la tabla.
-- RF-8: Cuando existan archivos en «otros», el informe indicará las extensiones no reconocidas más frecuentes con su recuento.
-- RF-9: No se clasificarán los archivos ocultos, los enlaces simbólicos ni los elementos cuya lectura no esté permitida. El informe indicará cuántos elementos se omitieron, desglosado por cada uno de esos tres motivos. Ningún elemento se omitirá sin aparecer en ese recuento.
-- RF-10: El análisis será de solo lectura: la herramienta no creará, moverá, renombrará ni eliminará ningún archivo ni directorio, incluidas las carpetas de destino que propone.
-- RF-11: Si la ruta indicada no existe, no es un directorio o su lectura no está permitida, la herramienta describirá el problema en la salida de error y terminará con código distinto de cero, sin emitir informe.
-- RF-12: Si el directorio no contiene ningún archivo analizable, la herramienta indicará que no hay archivos y terminará con código cero. Esta situación no es un error.
-- RF-13: Cuando un elemento resulte ilegible durante el recorrido, el análisis continuará con los demás y ese elemento se contabilizará entre los omitidos conforme a RF-9.
+
+### Informe
+
+- RF-7: El informe presentará una fila por grupo con recuento de archivos, tamaño total y la carpeta de destino que se propondría, más una fila de totales. El destino de cada grupo es `<ruta analizada>/<categoría>`, siempre en la raíz analizada: en modo recursivo, los archivos de las subcarpetas comparten ese mismo destino. Los grupos sin archivos podrán omitirse de la tabla.
+- RF-8: Cuando existan archivos en «otros», el informe mostrará hasta cinco extensiones no reconocidas con su recuento, ordenadas por recuento descendente y, en caso de empate, alfabéticamente.
+- RF-12: Si dentro del alcance del recorrido no hay ningún archivo analizable, la herramienta indicará que no se han encontrado archivos analizables, mostrará los recuentos de omitidos y subcarpetas cuando existan, y terminará con código cero. Esta situación no es un error.
+
+### Exclusiones
+
+- RF-9: No se clasificarán los archivos ocultos, los enlaces simbólicos, los elementos cuya lectura no esté permitida ni aquellos cuya lectura falle por otra causa. El informe indicará cuántas entradas se omitieron, desglosado por esos cuatro motivos. Cada entrada omitida se contabilizará una sola vez, aplicando la prioridad oculto → enlace simbólico → sin permiso → error de lectura, de modo que la suma por motivos coincida con el total de omitidos. Ninguna entrada se omitirá sin aparecer en ese recuento.
+- RF-15: Se considerará oculto todo elemento cuyo nombre empiece por punto en cualquier plataforma y, además en Windows, todo elemento con el atributo de sistema «oculto».
+- RF-14: Con la opción `--incluir-ocultos`, los archivos y las carpetas ocultos se examinarán como cualquier otro elemento y dejarán de contarse como omitidos. Sin esa opción, una carpeta oculta no se recorre y su contenido no se enumera.
+
+### Seguridad y fallos
+
+- RF-10: El análisis será de solo lectura: la herramienta no creará, moverá, renombrará ni eliminará ningún archivo ni directorio, incluidas las carpetas de destino que propone, y no abrirá el contenido de los archivos. Un archivo se considera analizable cuando pueden obtenerse su nombre y su tamaño.
+- RF-11: Si la ruta indicada no existe, no es un directorio o su lectura no está permitida, la herramienta describirá el problema y la ruta afectada en la salida de error y terminará con código dos, sin emitir informe. El mensaje distinguirá cuál de las tres causas se ha producido.
+- RF-13: Cuando un elemento falle durante el recorrido —por ejemplo, si desaparece entre su enumeración y la consulta de su tamaño, o si su lectura da error—, el análisis continuará con los demás y esa entrada se contabilizará entre los omitidos con su motivo real conforme a RF-9, sin atribuirla a una falta de permisos.
 
 ## Requisitos no funcionales
 
@@ -36,10 +65,11 @@ Persona que administra sus propios archivos desde la terminal, en Linux, macOS o
 
 ## Casos límite
 
-- Directorio vacío o con solo subcarpetas: RF-12.
-- Elementos ocultos, enlaces simbólicos y permisos denegados durante el recorrido: RF-9 y RF-13.
-- Archivos con varios puntos en el nombre o con la extensión en mayúsculas: RF-5, que atiende a la última extensión sin distinguir mayúsculas.
-- Nombres que empiezan por punto y carecen de otra extensión: se tratan como ocultos según RF-9, antes que como «sin extensión».
+- Directorio vacío: RF-12. Directorio con solo subcarpetas: sin `--recursivo`, RF-12; con `--recursivo`, se clasifican los archivos que contengan sus subcarpetas según RF-3.
+- Directorio en el que todos los elementos quedan excluidos: RF-12 junto con los recuentos de RF-9.
+- Elementos ocultos, enlaces simbólicos, permisos denegados y fallos de lectura durante el recorrido: RF-9, RF-13, RF-14 y RF-15.
+- Archivos con varios puntos en el nombre, como `copia.tar.gz`: RF-5, que atiende a la última extensión.
+- Nombres que empiezan por punto y carecen de otra extensión: RF-15 los trata como ocultos antes que como «sin extensión» de RF-6.
 
 ## Fuera de alcance
 
@@ -47,9 +77,4 @@ Mover u organizar archivos, confirmación interactiva de operaciones, resolució
 
 ## Criterios de finalización
 
-Pruebas de comportamiento que cubran cada RF sobre carpetas temporales desechables, incluida una comprobación de que el árbol de entrada queda intacto tras el análisis (RF-10) y otra de los códigos de salida (RF-1, RF-2, RF-11, RF-12). La validación indicará en qué plataformas de RNF-2 se ejecutaron realmente; no se afirmará compatibilidad sin evidencia.
-
-## Dudas abiertas
-
-- La lista de extensiones de cada categoría de RF-5 se fijará al planificar como conjunto inicial ampliable, no como clasificación cerrada.
-- El criterio de «más frecuentes» de RF-8 (cuántas extensiones mostrar) queda por concretar.
+Pruebas de comportamiento que cubran cada RF sobre carpetas temporales desechables, incluidas una comprobación de que el árbol de entrada queda intacto tras el análisis (RF-10), otra de los códigos de salida cero, uno y dos (RF-1, RF-2, RF-11, RF-12) y otra del reparto de motivos de exclusión frente a su total (RF-9). La validación indicará en qué plataformas de RNF-2 se ejecutaron realmente; no se afirmará compatibilidad sin evidencia.
