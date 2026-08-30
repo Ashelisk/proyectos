@@ -1,63 +1,56 @@
 # Validación — T1 y T2: arranque e invocación
 
-**Veredicto: no cumple completamente la revisión.** Los criterios explícitos de T2 sobre argumentos, ayuda y códigos de salida funcionan, sin regresiones observadas en T1. Queda V-5: los diagnósticos de uso incorrecto se emiten en inglés, en conflicto con RNF-3.
+**Veredicto: cumple T1 y T2 en el entorno verificado.** V-5 está corregida: los errores de uso comprobados mantienen causa en español y código uno. También se corrigió V-6, una discrepancia de codificación al capturar la salida en las pruebas.
 
 ## Alcance y entorno
 
-Versión revisada: `b9fe2ea`. Fecha: 2026-08-30. Windows AMD64, Python 3.14.7 y pytest 9.1.1. Instalación editable existente en `.venv`, sin reconstruir el entorno. Revisión independiente de T2 según [tasks.md](tasks.md), [plan.md](plan.md), [spec.md](spec.md) y la [constitución](../../docs/constitution.md).
+Aplicación de `e6dfbd0`, con las correcciones de pruebas incluidas en el mismo commit que este informe. Fecha: 2026-08-30. Windows AMD64, Python 3.14.7 y pytest 9.1.1. Instalación editable existente en `.venv`, sin reconstruirla. Revisión independiente de la traducción de errores y autorrevisión del ajuste de captura de las pruebas.
 
-No se han modificado código, pruebas, requisitos ni casillas. La validación de rutas pertenece a T3; el recorrido y el informe siguen pendientes. Que `analizar <ruta>` termine ahora en cero sin informe no se considera un fallo de T2.
+Se contrastaron [tasks.md](tasks.md), [plan.md](plan.md), [spec.md](spec.md) y la [constitución](../../docs/constitution.md). No se modificaron la aplicación, los requisitos ni el plan. T3 y el análisis de carpetas siguen pendientes.
 
 ## Evidencia ejecutada
 
-Suite completa desde `projects/filepilot/`, con un directorio temporal nuevo:
+Desde `projects/filepilot/`, con directorios temporales nuevos:
 
 ```powershell
-.\.venv\Scripts\python.exe -B -m pytest -q -rA -p no:cacheprovider --basetemp ../../.sdd-check/t2-review-1788118239042/suite
+.\.venv\Scripts\python.exe -B -m pytest -q -rA -p no:cacheprovider --basetemp ../../.sdd-check/t2-close-1788118805179/normal-despues
+$env:PYTHONIOENCODING = 'utf-8'
+.\.venv\Scripts\python.exe -B -m pytest -q -p no:cacheprovider --basetemp ../../.sdd-check/t2-close-1788118805179/utf8-despues
 ```
 
-Resultado: **10 pruebas superadas, ninguna omitida**, en 1,35 s: las tres de T1 y las siete de T2.
+Resultado: **17 pruebas superadas, ninguna omitida**, en cada ejecución (2,16 s y 2,17 s). La variable se estableció solo para el proceso de comprobación, sin modificar la configuración persistente del equipo.
 
-Desde una carpeta temporal ajena al producto se ejecutaron además **24 invocaciones**, doce mediante el ejecutable del entorno y doce mediante su intérprete con `-I -B -m filepilot`:
+Además, se ejecutaron **48 invocaciones** desde una carpeta ajena al producto: doce casos por módulo y por comando instalado, con salida cp1252 y UTF-8. La comprobación capturó bytes y los decodificó con la codificación configurada en cada proceso, sin sustituciones:
 
-- Sin subcomando, sin ruta, con opción desconocida, con subcomando desconocido, con argumento sobrante, con `--recursivo` sin ruta y con `--recursivo=si`: código uno, uso en la salida de error y salida estándar vacía.
-- Ayuda general y de `analizar`: código cero, ayuda en la salida estándar y salida de error vacía.
-- Ruta sola y ruta con ambas opciones, antes o después de ella: argumentos aceptados, código cero y ninguna salida, conforme al alcance provisional de T2.
+- Sin subcomando o ruta, opción o subcomando desconocido, argumento sobrante y valor indebido para una opción: causa concreta en español, uso en la salida de error, código uno y salida estándar vacía.
+- Ayuda general y del subcomando: código cero, salida de error vacía y opciones visibles.
+- Ruta y combinaciones de opciones: código cero sin informe, conforme al alcance provisional de T2.
 
-Los errores comprobados no devuelven el código dos reservado para T3. La prueba de opciones verifica también que ambas están desactivadas por defecto y que se activan al indicarlas.
+Una invocación adicional con una opción desconocida en cirílico y salida cp1252 terminó con código uno, sin excepción de escritura. Esta prueba de diagnóstico no demuestra la futura salida de nombres en el informe.
 
 ## Cumplimiento
 
 | Requisito o criterio | Evidencia | Resultado | Limitación |
 | --- | --- | --- | --- |
-| RF-2: uso incorrecto, salida de error y código uno | Suite y siete casos por cada entrada | Cumple | El idioma del diagnóstico se evalúa aparte |
-| RF-3 / RF-14: declaración de opciones | Prueba de argumentos y ejecución directa | Cumple, parcial | Recorrido y exclusiones pendientes |
-| T2: ayuda general y del subcomando | Ambas entradas con código cero | Cumple | No implica análisis implementado |
-| RNF-3: mensajes de error en español | Diagnósticos de argumentos emitidos en inglés | Falla | V-5 |
-| T1: arranque y dependencias declaradas | Tres pruebas anteriores superadas | Cumple | Instalación existente; sin reconstrucción |
-| RNF-1: funcionamiento completo sin red | No verificado en este incremento | No verificado | Pendiente de T13 |
+| RF-2: uso incorrecto y código uno | Suite y casos directos por ambas entradas | Cumple | No valida los errores de ruta de T3 |
+| RF-3 / RF-14: declaración de opciones | Valores por defecto, activación y órdenes válidas | Cumple, parcial | Recorrido y exclusiones pendientes |
+| RNF-3: diagnósticos de T2 en español | Causas esperadas y ausencia de frases de error en inglés | Cumple en T2 | Errores de archivos pendientes |
+| T1: arranque y dependencias declaradas | Tres pruebas de arranque incluidas en la suite | Cumple | Instalación existente |
+| Captura fiable de salida en las pruebas | Suite con entorno habitual y con salida UTF-8 | Cumple | La captura controla su propia codificación |
+| RNF-1: funcionamiento completo sin red | No ejecutado | No verificado | Pendiente de T13 |
 | RNF-2 y versión mínima del plan | Python 3.11, Linux y macOS no ejecutados | No verificado | Pendiente de T12 |
 
-## V-5 — Diagnósticos de uso incorrecto en inglés
+## Incidencias cerradas
 
-**Prioridad media.** [cli.py](../../filepilot/cli.py), método `AnalizadorDeOrdenes.error`: imprime directamente el mensaje recibido de `argparse`. Ejemplos reproducidos con la orden instalada:
+**V-5 — Idioma de los errores.** La traducción cubre las causas ejercitadas en T2, incluida la línea de uso, sin perder el argumento que provoca el error. Los fallos de archivos de tareas posteriores no se consideran verificados.
 
-```text
-filepilot analizar
-filepilot analizar: error: the following arguments are required: ruta
+**V-6 — Codificación de las pruebas.** Antes del ajuste, con `PYTHONIOENCODING=utf-8`, la suite daba 16 pruebas superadas y un fallo: el subproceso escribía «opción» en UTF-8 y la captura lo interpretaba como cp1252. [test_arranque.py](../../tests/test_arranque.py) y [test_cli.py](../../tests/test_cli.py) fijan ahora UTF-8 tanto para el subproceso como para su lectura. No se ha añadido una política de codificación a la aplicación. Ambas ejecuciones completas pasan tras el ajuste.
 
-filepilot analizar . --inexistente
-filepilot: error: unrecognized arguments: --inexistente
-```
+V-1 / V-4 conservan la selección exclusiva del ejecutable del entorno virtual; la comprobación negativa de aislamiento corresponde a `27b02d5` y no se repitió aquí. Se mantienen la simplificación de argumentos de V-2 y el estado documental de V-3.
 
-RF-2 queda cubierto en canal y código, pero RNF-3 exige mensajes de error en español. Aunque las tareas concentran la referencia a RNF-3 en T10, esa regla también afecta a los diagnósticos ya emitidos por T2. La prueba actual comprueba el uso y el código, sin verificar el idioma ni el diagnóstico de la causa.
+## Límites que no bloquean T2
 
-**Corrección:** emitir en español la causa concreta —ruta obligatoria ausente, opción o subcomando desconocido— y verificarla con pruebas de comportamiento, conservando código uno y salida de error. No sustituirla por un mensaje genérico que oculte la causa ni debilitar RNF-3.
+- **Ayuda:** sus encabezados y el texto automático de `--help` siguen en inglés; RNF-3 solo exige español para los errores. Traducirlos no exige necesariamente atributos privados: existen [grupos con títulos configurables y opciones de ayuda públicas](https://docs.python.org/3.11/library/argparse.html#argument-groups). Una exigencia de ayuda íntegramente en español debe incorporarse primero a los requisitos.
+- **Informe y caracteres no representables:** T8/T12 deben comprobar nombres no ASCII y salida redirigida, registrando la codificación efectiva. `LANG=C` por sí solo no prueba una salida ASCII: Python puede activar UTF-8 mediante la [configuración de locales](https://docs.python.org/3.11/using/cmdline.html#envvar-PYTHONCOERCECLOCALE). La escritura en una codificación limitada sigue siendo un riesgo pendiente del informe, no una incompatibilidad multiplataforma demostrada.
 
-## Estado conservado y siguiente paso
-
-V-1 / V-4: la prueba de T1 mantiene la selección exclusiva del ejecutable del entorno virtual; no ha cambiado desde `27b02d5`. Su comprobación negativa de aislamiento sigue siendo la evidencia de aquella versión y no se ha repetido en esta revisión. La instalación real con `--user` continúa sin validarse.
-
-V-2: se conserva `parse_args(argv)`; el import de `sys` añadido en T2 sí es necesario para escribir en `sys.stderr`. V-3: README y tareas reflejan T2 implementada y T3 pendiente.
-
-Resolver V-5 y repetir las pruebas antes de cerrar T2 sin observaciones. No hace falta cambiar la spec ni el plan. T3 no se ha iniciado.
+Siguiente tarea: **T3**, todavía sin iniciar.

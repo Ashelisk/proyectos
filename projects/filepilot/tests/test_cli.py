@@ -1,5 +1,6 @@
 """T2: contrato de invocación y código uno del uso incorrecto (RF-2, RF-3)."""
 
+import os
 import subprocess
 import sys
 
@@ -14,9 +15,9 @@ def ejecutar(argumentos, directorio):
         [sys.executable, "-m", "filepilot", *argumentos],
         cwd=directorio,
         capture_output=True,
-        # Sin codificación explícita: se usa la del entorno, la misma que emplea
-        # el proceso hijo al escribir sus mensajes.
-        text=True,
+        # Usa la misma codificación al escribir y leer la salida capturada.
+        env={**os.environ, "PYTHONIOENCODING": "utf-8"},
+        encoding="utf-8",
     )
 
 

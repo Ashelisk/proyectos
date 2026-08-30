@@ -1,5 +1,6 @@
 """T1: la aplicación instalada arranca por sus dos vías y muestra su ayuda."""
 
+import os
 import subprocess
 import sys
 import sysconfig
@@ -12,9 +13,9 @@ def ejecutar(orden, directorio):
         orden,
         cwd=directorio,
         capture_output=True,
-        # Sin codificación explícita: se usa la del entorno, la misma que emplea
-        # el proceso hijo al escribir sus mensajes.
-        text=True,
+        # Usa la misma codificación al escribir y leer la salida capturada.
+        env={**os.environ, "PYTHONIOENCODING": "utf-8"},
+        encoding="utf-8",
     )
 
 
