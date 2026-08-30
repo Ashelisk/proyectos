@@ -1,8 +1,46 @@
 # Clarificación — Análisis e informe de una carpeta
 
-**Resultado: lista para planificación.** Revisión documental de [spec.md](spec.md) contrastada con la [constitución](../../docs/constitution.md). Los doce hallazgos están resueltos en los requisitos; no quedan decisiones abiertas dentro del alcance revisado. No se ha implementado ni ejecutado código de producto.
+**Resultado: lista salvo las partes indicadas.** Revisión documental de [spec.md](spec.md) y [plan.md](plan.md), versión `a9c39c4`, contrastada con la [constitución](../../docs/constitution.md). La spec necesita alinear RF-12 con RF-13; el plan requiere completar los contratos y verificaciones indicados antes de cerrar las tareas afectadas. No se han modificado la spec ni el plan ni ejecutado código de producto.
 
 El alcance de solo lectura sigue siendo coherente con la constitución. Se conservan las decisiones cerradas de la especificación: analizar e informar sin mover nada, clasificación por extensión, primer nivel con opción recursiva, resumen en consola y exclusiones contabilizadas.
+
+## Hallazgos abiertos
+
+### CL-9 — Código de salida cuando no queda ningún archivo analizable
+
+- **Prioridad media · parcialmente resuelto · contradicción.** Spec: RF-1, RF-12 y RF-13, líneas 19, 46 y 58; plan, líneas 42–45.
+- **Escenario e impacto:** la raíz es legible, pero su único archivo desaparece antes de obtener el tamaño. RF-12 exige cero porque no hay archivos analizables; RF-13 exige tres porque hay un error de lectura. El plan aplica tres. Dos pruebas derivadas de la spec esperarían resultados incompatibles.
+- **Corrección necesaria:** extender a RF-12 la excepción de RF-13, ya recogida en RF-1 y en el plan. Una carpeta vacía o con solo exclusiones voluntarias sigue terminando en cero; con fallos por permisos o lectura, en tres aunque no se clasifique ningún archivo. No requiere redefinir el alcance.
+
+### CL-13 — El contrato de omisiones pierde la causa del fallo
+
+- **Prioridad media · abierto · contrato técnico incompleto.** Plan, líneas 28–32 y 47; RF-13 y RNF-3.
+- **Escenario e impacto:** una desaparición y un fallo de E/S se reducen a `EntradaOmitida(ruta, error_lectura)`. Ese dato permite contar, pero no distinguir la causa concreta que debe mostrar el aviso.
+- **Corrección necesaria:** conservar el diagnóstico del fallo en el resultado o definir otra vía explícita hasta quien emite el aviso. Separar el motivo del recuento de la causa comunicada y asignar la responsabilidad de emitirla; no reconstruirla por suposición.
+
+### CL-14 — Versión mínima sin justificación de mantenimiento
+
+- **Prioridad media · abierto · riesgo técnico.** Plan, líneas 15 y 63; constitución, principios 2 y 7.
+- **Escenario e impacto:** admitir Python 3.9 obliga a mantener una combinación antigua de intérprete y herramientas. Python 3.9 terminó su soporte oficial el 31 de octubre de 2025 y pytest 9 requiere Python 3.10 o superior. El plan no concreta una combinación verificable ni una necesidad de compatibilidad heredada. Fuentes: [ciclo de Python 3.9](https://peps.python.org/pep-0596/) y [compatibilidad de pytest](https://docs.pytest.org/en/stable/backwards-compatibility.html#python-version-support).
+- **Corrección necesaria:** justificar la versión mínima por soporte y distribución, y concretar versiones compatibles de desarrollo. Preferir una versión mantenida si no hay una necesidad documentada de 3.9; no confundir compatibilidad sintáctica con soporte vigente.
+
+### CL-15 — Degradación silenciosa de la detección de ocultos
+
+- **Prioridad media · abierto · conflicto entre plan y spec.** Plan, líneas 57 y 81; RF-15.
+- **Escenario e impacto:** en la alternativa prevista por el plan para Windows sin `st_file_attributes`, un archivo con atributo oculto y sin punto inicial se clasificaría como visible. RF-15 exige reconocer ese atributo, sin excepciones.
+- **Corrección necesaria:** limitar la ausencia tolerada a plataformas donde ese atributo no aplica. En Windows no debe interpretarse un dato no disponible como «visible»; definir una detección compatible o comunicar la imposibilidad de examinarlo. Python documenta el atributo en Windows desde 3.5: [metadatos de archivos](https://docs.python.org/3.9/library/os.html#os.stat_result.st_file_attributes).
+
+### CL-16 — Verificación insuficiente de lectura y fallos
+
+- **Prioridad media · abierto · cobertura incompleta.** Plan, líneas 67–79; RF-10 y RF-13.
+- **Escenario e impacto:** abrir un archivo solo para leerlo deja intactas sus rutas, tamaños y fechas de modificación; la instantánea prevista aprobaría una implementación que incumple RF-10. Tampoco se concreta cómo provocar de forma repetible una desaparición o un fallo de E/S para verificar la continuación y el diagnóstico de RF-13.
+- **Corrección necesaria:** mantener las pruebas con árboles temporales y añadir una comprobación que detecte aperturas de contenido por la aplicación. Introducir fallos controlados en la consulta de metadatos o enumeración y comprobar continuación, ruta y causa en la salida de error, recuento único y código tres, incluido el caso sin archivos analizables. Las pruebas simuladas complementan, no acreditan por sí solas, los permisos reales de cada plataforma.
+
+### CL-17 — Justificación imprecisa de las APIs de recorrido
+
+- **Prioridad baja · abierto · precisión técnica; no bloquea la arquitectura.** Plan, líneas 15, 53 y 75.
+- **Escenario e impacto:** el texto presenta los metadatos de `scandir` como una única consulta en todas las plataformas y atribuye a `walk` una limitación absoluta de diagnóstico. También trata los privilegios administrativos como necesarios en todo Windows. Esas premisas pueden inducir comprobaciones o descartes incorrectos.
+- **Corrección necesaria:** mantener `scandir` si conviene al control por entrada, precisando que `DirEntry.stat()` consulta el sistema en Unix y que `walk` permite gestionar errores de enumeración con `onerror` y consultar cada archivo. La creación de enlaces en Windows también puede funcionar sin elevación con modo de desarrollador; omitir la prueba solo cuando no pueda prepararse. Fuentes: [scandir](https://docs.python.org/3.9/library/os.html#os.scandir), [walk](https://docs.python.org/3.9/library/os.html#os.walk) y [symlink](https://docs.python.org/3.9/library/os.html#os.symlink).
 
 ## Hallazgos resueltos
 
@@ -54,12 +92,6 @@ El alcance de solo lectura sigue siendo coherente con la constitución. Se conse
 - **Escenario e impacto:** el caso límite remitía a «no hay archivos» aunque con `--recursivo` esas subcarpetas pudieran contener archivos analizables.
 - **Decisión:** los casos límite distinguen ahora ambos modos y RF-12 se refiere a la ausencia de archivos analizables dentro del alcance del recorrido.
 
-### CL-9 — Código de salida con fallos parciales
-
-- **Prioridad media · resuelto.** RF-1 y RF-13.
-- **Escenario e impacto:** un análisis que emite su informe pero deja tres archivos sin leer podía terminar en cero o en un código de aviso; un script no podía distinguir un informe completo de otro con lagunas.
-- **Decisión:** RF-13 fija el código tres cuando el informe se emite con entradas omitidas por falta de permisos o por error de lectura. Las omisiones por ocultación o por enlace no alteran el código, y RF-1 remite a esa excepción.
-
 ### CL-10 — Nombres de las carpetas propuestas
 
 - **Prioridad media · resuelto.** RF-6 y RF-7.
@@ -80,8 +112,8 @@ El alcance de solo lectura sigue siendo coherente con la constitución. Se conse
 
 ## Correcciones asociadas
 
-RF-2 y RF-11 separan el código de salida uno, para el uso incorrecto del comando, del código dos, para las causas de ruta enumeradas: inexistente, no es un directorio o lectura no permitida. RF-12 fija código cero y describe el informe cuando no hay archivos analizables.
+RF-2 y RF-11 separan el código de salida uno, para el uso incorrecto del comando, del código dos, para las causas de ruta enumeradas: inexistente, no es un directorio o lectura no permitida. RF-12 describe el informe sin archivos analizables; su relación con el código tres se revisa en CL-9.
 
 ## Cierre de la revisión
 
-CL-1 a CL-12 están resueltos. El siguiente paso es preparar el plan técnico a partir de la spec. Esta revisión no valida la implementación ni la compatibilidad con las plataformas de RNF-2.
+CL-1 a CL-8 y CL-10 a CL-12 conservan sus resoluciones. CL-9 requiere coherencia entre requisitos; CL-13 a CL-16 requieren ajustes técnicos, y CL-17 corrige la justificación sin exigir otra arquitectura. La división en cuatro componentes, la biblioteca estándar en ejecución y las pruebas con datos desechables son proporcionadas. No es necesario reiniciar la definición del producto. Esta revisión no valida implementación ni compatibilidad real con plataformas.
