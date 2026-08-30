@@ -1,0 +1,6 @@
+interface:
+  display_name: "SDD · Coordinación"
+  short_description: "Inicia y retoma el flujo SDD por fases"
+  default_prompt: "Usa $sdd-coordinador para retomar la fase actual del proyecto, respetando las entrevistas de constitución y especificación y documentando mis respuestas."
+policy:
+  allow_implicit_invocation: true

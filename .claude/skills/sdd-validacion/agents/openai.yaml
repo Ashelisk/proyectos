@@ -1,0 +1,6 @@
+interface:
+  display_name: "SDD · Validación"
+  short_description: "Comprueba cumplimiento con evidencia real"
+  default_prompt: "Usa $sdd-validacion para comprobar la spec activa requisito por requisito e indicar qué falta verificar."
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,6 @@
+interface:
+  display_name: "SDD · Constitución"
+  short_description: "Entrevista y documenta las bases del proyecto"
+  default_prompt: "Usa $sdd-constitucion para entrevistarme sobre el enfoque y las opciones de lenguaje del proyecto y actualizar su constitución con mis respuestas."
+policy:
+  allow_implicit_invocation: true

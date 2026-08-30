@@ -1,0 +1,6 @@
+interface:
+  display_name: "SDD · Especificación"
+  short_description: "Pregunta y concreta requisitos verificables"
+  default_prompt: "Usa $sdd-especificacion para entrevistarme sobre la próxima funcionalidad y documentar sus requisitos con mis respuestas, sin escribir código."
+policy:
+  allow_implicit_invocation: true

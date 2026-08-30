@@ -1,0 +1,6 @@
+interface:
+  display_name: "SDD · Planificación"
+  short_description: "Diseña un plan trazable a los requisitos"
+  default_prompt: "Usa $sdd-planificacion para crear el plan técnico de la spec activa sin implementar código."
+policy:
+  allow_implicit_invocation: true

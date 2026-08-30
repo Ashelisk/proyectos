@@ -1,0 +1,6 @@
+interface:
+  display_name: "SDD · Cambio"
+  short_description: "Actualiza la spec antes de cambiar código"
+  default_prompt: "Usa $sdd-cambio para documentar el nuevo requisito y su impacto antes de modificar código."
+policy:
+  allow_implicit_invocation: true

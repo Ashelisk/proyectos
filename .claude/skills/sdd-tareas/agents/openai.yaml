@@ -1,0 +1,6 @@
+interface:
+  display_name: "SDD · Tareas"
+  short_description: "Divide el plan en tareas comprobables"
+  default_prompt: "Usa $sdd-tareas para dividir el plan activo en tareas pequeñas con dependencias y criterios de cierre."
+policy:
+  allow_implicit_invocation: true

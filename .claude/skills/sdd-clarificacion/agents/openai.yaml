@@ -1,0 +1,6 @@
+interface:
+  display_name: "SDD · Clarificación"
+  short_description: "Detecta ambigüedades y huecos de requisitos"
+  default_prompt: "Usa $sdd-clarificacion para revisar la spec activa y señalar dudas materiales sin resolverlas por mí."
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,6 @@
+interface:
+  display_name: "SDD · Implementación"
+  short_description: "Implementa tareas con pruebas y evidencia"
+  default_prompt: "Usa $sdd-implementacion para completar la siguiente tarea lista de la spec activa y verificarla."
+policy:
+  allow_implicit_invocation: true
