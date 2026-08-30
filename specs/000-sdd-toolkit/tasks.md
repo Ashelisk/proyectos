@@ -21,6 +21,13 @@ Evidencia CH-1: validador repetido con nueve resultados válidos; revisados los 
 
 El estado de cada producto se consulta en sus documentos; estas tareas no reabren entrevistas ni decisiones ya resueltas.
 
+## Puente opcional
+
+- [x] T10 — Implementar el puente y su protocolo. RF-14 a RF-17. Hecho cuando: los encargos quedan aislados, se reanuda su sesión explícita, el coordinador controla el veredicto y se respetan rutas y límites sin habilitar herramientas generales de ejecución.
+- [x] T11 — Verificar y documentar el puente. RF-14 a RF-18. Hecho cuando: las pruebas locales cubren fallos y transición de estados; un intercambio real de solo lectura y su continuación funcionan; la guía permite retomar el ciclo y distingue la evidencia simulada de la real.
+
+Evidencia del puente, 2026-08-30: once pruebas locales superadas con Python 3.14.7 en Windows. Claude Code 2.1.251 recibió dos encargos reales de solo lectura en la misma sesión y conservó el contexto, sin cambios en la copia aislada. Una tercera invocación corrigió solo el archivo permitido de un ejemplo desechable: sus tres casos fallaban antes y pasaron tras la edición, verificados por el coordinador. Ambas tareas de prueba quedaron aprobadas mediante huella y evidencia. No se implementaron tareas de FilePilot. Detalle y límites en [validation.md](validation.md); uso en la [guía del puente](../../tools/puente_agentes/README.md).
+
 ## Ajuste CH-2
 
 - [x] T8 — Preparar el descubrimiento en Claude Code y documentar las copias. RF-9. Hecho cuando: `CLAUDE.md` importa las instrucciones del repositorio, `.claude/skills/` coincide con las fuentes y `AGENTS.md` y `README.md` describen las dos copias y su sincronización.

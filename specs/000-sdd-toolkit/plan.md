@@ -8,6 +8,16 @@
 
 Se prefieren skills a nueve agentes permanentes porque el conocimiento es reutilizable y la mayoría de las fases dependen de la anterior. Los subagentes se reservan para revisiones concretas.
 
+## Puente de programación y revisión
+
+RF-14 a RF-18: script Python 3.11+ con biblioteca estándar en `tools/puente_agentes/`, separado de los productos. Usa `git worktree add --detach` para aislar cada tarea y `claude -p --output-format json` con identificador explícito para enviar y continuar encargos. Codex coordina desde la conversación activa; el puente no lanza otro Codex ni es un servicio desatendido.
+
+El estado, los encargos y las respuestas residen en `.sdd-check/puente/`. Un bloqueo exclusivo evita envíos simultáneos y una huella del diff y archivos nuevos vincula la revisión a la entrega. Solo el coordinador registra el veredicto. Claude recibe las instrucciones SDD y un protocolo común; sus herramientas excluyen shell, web y MCP. La edición requiere rutas explícitas, sin permitir modificar instrucciones ni requisitos. Las pruebas las ejecuta el coordinador, no un comando generado y ejecutado automáticamente.
+
+Por defecto: tres envíos, diez minutos por envío y dos dólares de presupuesto estimado acumulado comunicado a Claude Code. El límite monetario es una cota de estimación del CLI, no una garantía de facturación o cuota de suscripción. Ante respuesta inválida, interrupción, permisos insuficientes o falta de acceso, se conserva el estado y se detiene el ciclo. No hay integración ni limpieza destructiva automáticas.
+
+Verificación: datos desechables para aislamiento Git, continuidad, límites, concurrencia, respuestas inválidas y revisión de una entrega alterada; después dos intercambios reales de solo lectura. La aprobación técnica exige pruebas y diff revisados, no solo que el CLI devuelva cero.
+
 ## Ajuste CH-1 — Entrevistas
 
 Las instrucciones y metadatos de constitución, especificación y coordinación deben cumplir RF-10 a RF-12: preguntar las decisiones pendientes y conservar las ya resueltas. Propagar la regla a `AGENTS.md` y la guía. Tras modificar skills, repetir la validación de formato, revisar la coherencia de las reglas y sincronizar ambas copias de descubrimiento.

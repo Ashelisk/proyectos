@@ -20,9 +20,17 @@ Preparar herramientas reutilizables para definir, implementar y verificar increm
 - RF-12: Mientras falten respuestas necesarias de esa entrevista, el documento mantendrá estado de borrador o entrevista en curso. La coordinación no cerrará la fase ni avanzará al trabajo dependiente, aunque el usuario haya autorizado desarrollar el proyecto completo.
 - RF-13: Las constituciones de proyectos pequeños contendrán pocos principios breves; las specs añadirán solo el detalle necesario para implementar y verificar. Ninguna incluirá historial de conversación, perfiles del usuario o comparativas resueltas; las respuestas modificarán reglas y requisitos, sin acumularse en otros documentos.
 
+### Puente opcional de programación y revisión
+
+- RF-14: Un encargo autorizado podrá ejecutarse con Codex como coordinador y revisor y Claude Code como programador, mediante una sesión identificada por tarea y una copia Git aislada. Ningún encargo modificará automáticamente el checkout original ni iniciará otra tarea.
+- RF-15: Los mensajes y resultados estructurados se conservarán localmente, excluidos de Git. El puente distinguirá entrega para revisión, corrección, decisión pendiente, bloqueo y aprobación; una respuesta del programador no aprobará su propia entrega. La revisión se asociará a la versión de los archivos comprobados.
+- RF-16: El coordinador enviará las correcciones y repetirá las verificaciones sin intervención rutinaria. Los requisitos sin resolver se consultarán al usuario. Se limitarán rondas, tiempo y presupuesto estimado por encargo; errores, respuestas inválidas y agotamiento de límites detendrán la ejecución sin darla por completada.
+- RF-17: Claude tendrá herramientas de lectura y, solo cuando se indiquen, edición de rutas autorizadas. No tendrá shell, acceso web, MCP ni control de Git desde sus herramientas. El coordinador ejecutará las pruebas necesarias en un entorno permitido y centralizará integración, commits y subidas. No se desactivarán controles de permisos para automatizar el flujo.
+- RF-18: La instalación se verificará con pruebas locales del protocolo y un intercambio real de solo lectura que incluya una continuación de sesión. Se distinguirá esa evidencia de una tarea de programación completa y de plataformas no ejecutadas.
+
 ## Decisiones y límites
 
-Se eligen nueve skills de instrucciones: una coordinadora y ocho fases. Las fuentes editables están en `skills/`; las copias de descubrimiento, en `~/.agents/skills/` para Codex y `.claude/skills/` para Claude Code. No se crean servicios, agentes persistentes, credenciales ni proyectos de producto en este trabajo.
+Se eligen nueve skills de instrucciones: una coordinadora y ocho fases. Las fuentes editables están en `skills/`; las copias de descubrimiento, en `~/.agents/skills/` para Codex y `.claude/skills/` para Claude Code. El puente de `tools/puente_agentes/` es opcional y utiliza Claude Code instalado y autenticado; no crea credenciales, servicios permanentes ni proyectos de producto.
 
 La guía sigue Hello SDD: constitución breve, entrevista obligatoria, requisitos observables y fases dependientes secuenciales. Las preguntas se hacen en el chat; los archivos contienen el estado operativo del proyecto.
 

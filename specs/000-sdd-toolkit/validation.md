@@ -75,3 +75,38 @@ No se ha verificado visualmente que el selector de la aplicación haya refrescad
 La evaluación conductual cubre dos fases y dos escenarios, no todas las combinaciones posibles. Las otras fases se revisaron estructuralmente. Se deberán ajustar las instrucciones solo cuando el uso real muestre un problema concreto.
 
 Esta validación cubre únicamente las herramientas SDD, no certifica el funcionamiento de FilePilot ni de los demás productos.
+
+## Puente de programación y revisión
+
+**Resultado: cumple RF-14 a RF-18 en el alcance ejecutado.** Fecha: 2026-08-30. Windows 11, Python 3.14.7, Git y Claude Code 2.1.251 con acceso autenticado. Se evalúan el código y protocolo incluidos en el mismo commit que este informe. Es autorrevisión del puente; el ejemplo de programación fue implementado por Claude y comprobado por el coordinador.
+
+### Comprobaciones locales
+
+Desde la raíz del repositorio:
+
+```powershell
+.\projects\filepilot\.venv\Scripts\python.exe -B -m unittest discover -s tools/puente_agentes -p test_puente.py -v
+```
+
+**11 pruebas superadas, sin omisiones, en 9,90 segundos.** La primera ejecución anterior a la implementación falló porque faltaba el módulo del puente. La suite final crea repositorios temporales y comprueba aislamiento, sesión explícita, revisión obligatoria, huella obsoleta, cambios fuera del alcance, bloqueo exclusivo, rutas inválidas, límite de envíos, presupuesto, decisiones pendientes, sesión incorrecta, permisos denegados, respuestas inválidas y tiempo agotado. El transporte de modelo es simulado en esas pruebas; una comprobación adicional de la misma suite termina realmente un proceso Python desechable al vencer su tiempo.
+
+### Intercambios reales
+
+1. **Lectura y continuación.** Encargo `prueba-puente`, copia aislada de `a11e72d`, sin permisos de edición ni shell. Claude leyó la constitución y la spec de FilePilot e identificó el producto y el código de RF-11. Después de contrastar la respuesta y registrar revisión, se reanudó la misma sesión. Recuperó una señal del primer mensaje que no figuraba en el segundo. Ambas respuestas fueron JSON válido; las huellas inicial y final coincidieron y la copia no tenía cambios. La aprobación correspondió al coordinador.
+2. **Edición delimitada.** Repositorio sintético bajo `.sdd-check/puente/fixture/`, independiente de los productos. Una función incumplía el requisito de devolver el doble de un entero. Los casos positivo, cero y negativo fallaban inicialmente. Claude recibió permiso de edición únicamente en `src`, cambió solo `src/calculo.py` y dejó las pruebas pendientes para el coordinador. Este ejecutó `python -B -m unittest discover -v` con el intérprete anterior en la copia aislada: la prueba y sus tres casos pasaron. El diff no alteró requisitos ni pruebas. Se aprobó la huella exacta sin integrar el ejemplo en un producto.
+
+Se ejecutaron las cuatro operaciones del CLI: `iniciar`, `enviar`, `revisar` y `estado`, además de su ayuda. Los mensajes se leyeron de archivos UTF-8 y las respuestas se validaron sin ejecutar instrucciones de shell procedentes del modelo. Tres invocaciones reales de Claude en total; estimación acumulada comunicada por su CLI: aproximadamente 0,2061 USD, no una medición de facturación ni de cuota de suscripción.
+
+### Trazabilidad y límites
+
+| Requisito | Evidencia | Resultado y límite |
+| --- | --- | --- |
+| RF-14 | Worktrees desechables, original intacto, sesión conservada | Cumple; no se ejecutó una tarea completa de producto |
+| RF-15 | JSON, transiciones, revisión por huella y rechazo si cambia la entrega | Cumple; el contenido técnico de la revisión depende del coordinador |
+| RF-16 | Corrección y continuación, decisiones pendientes y límites | Cumple; cuotas y errores del proveedor se simulan, no se agotó una cuenta real |
+| RF-17 | Herramientas restringidas, edición real solo en src, pruebas ejecutadas por el coordinador | Cumple en los escenarios comprobados; no es una garantía de aislamiento del sistema operativo |
+| RF-18 | Once pruebas locales y tres intercambios reales | Cumple; Python 3.11, Linux y macOS no ejecutados |
+
+La versión de FilePilot cambió a `a11e72d` desde otra sesión durante la preparación del puente; se preservó y no se revisó ni modificó su implementación en este trabajo. Ninguna skill ni sus copias se modificaron. Los intercambios, estados y ejemplos quedan en `.sdd-check/`, excluidos de Git; las sesiones también permanecen en el almacenamiento habitual de Claude Code para su continuidad. No se crearon credenciales, automatizaciones permanentes ni procesos que sigan trabajando tras estas pruebas.
+
+El circuito requiere una conversación activa de coordinación. No se afirma que continúe después de detener esa conversación. La integración de cambios aprobados y su verificación final pertenecen al coordinador, no al script.

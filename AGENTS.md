@@ -20,6 +20,10 @@ El repositorio organiza seis proyectos progresivos con Spec-Driven Development: 
 - Utiliza subagentes solo para encargos independientes que aporten valor, conforme a las capacidades y permisos de la sesión. No es necesario crear un agente permanente por fase.
 - Habla y documenta en español salvo indicación contraria. Explica las decisiones técnicas con claridad y precisión.
 
+## Coordinación de programación y revisión
+
+Cuando se autorice el flujo Codex revisor / Claude Code programador, utiliza el [puente local](tools/puente_agentes/README.md). Codex mantiene el ciclo de encargos, pruebas y correcciones dentro de la tarea autorizada hasta validarla o detectar una decisión pendiente, un bloqueo o un límite. No termina el turno solo para preguntar si debe reenviar una corrección técnica. Claude actúa únicamente como programador, no invoca el puente ni se aprueba a sí mismo. El coordinador controla documentos compartidos, integración y Git; ningún agente amplía el alcance ni elude los permisos. Preparar el puente no autoriza nuevas tareas de producto.
+
 ## Control de versiones
 
 - Al completar cada cambio importante, revisa el diff, ejecuta las comprobaciones pertinentes y crea un commit con un mensaje claro en español. Agrupa cambios relacionados; no crees un commit por cada ajuste menor.

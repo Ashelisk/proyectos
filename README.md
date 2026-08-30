@@ -51,6 +51,8 @@ Una petición de «solo especificar» acaba en documentos. Una petición de cons
 
 ### Revisiones con subagentes
 
+Para trabajar con Codex como coordinador/revisor y Claude Code como programador está disponible el [puente local](tools/puente_agentes/README.md). Intercambia encargos y correcciones por tarea en una copia Git aislada, con permisos y límites explícitos; los mensajes se conservan fuera del repositorio publicado. Su uso es opcional y requiere una conversación activa de coordinación.
+
 Las skills guardan instrucciones reutilizables; no son procesos que permanezcan trabajando. Un subagente puede aplicar una de esas skills en una revisión concreta. Los mejores puntos para ello son clarificación y validación, cuando una mirada independiente aporta valor.
 
 La coordinadora puede encargar una revisión independiente si el entorno lo permite o completarla localmente. Las fases mantienen sus dependencias. La guía está en [revisiones](skills/sdd-coordinador/references/revisiones.md).
