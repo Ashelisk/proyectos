@@ -1,6 +1,6 @@
 # Validación — T1: estructura e instalación
 
-**Veredicto: cumple T1 en el entorno verificado.** V-1, V-2 y V-3 están corregidas. Esta comprobación es una autorrevisión de las correcciones, no una revisión independiente ni una validación de toda la spec.
+**Veredicto: cumple T1 en el entorno verificado.** V-1 a V-4 están corregidas. Esta comprobación es una autorrevisión de las correcciones, no una revisión independiente ni una validación de toda la spec.
 
 ## Alcance y entorno
 
@@ -42,5 +42,6 @@ Los metadatos instalados indican versión `0.1.0`, Python `>=3.11`, entrada `fil
 | V-1: prueba omitida o ejecutable ajeno | [test_arranque.py](../../tests/test_arranque.py) exige el archivo en el directorio de scripts del intérprete, sin buscar en el PATH ni omitir su ausencia | Arranque real superado y ausencia simulada detectada |
 | V-2: lectura redundante de argumentos | [cli.py](../../filepilot/cli.py) pasa `argv` directamente a `parse_args`; retirado el import de `sys` | Ambos arranques y lista explícita verificados |
 | V-3: estado anterior a T1 | [tasks.md](tasks.md), [README](../../../../README.md) y [AGENTS.md](../../../../AGENTS.md) reflejan T1 completada y el alcance pendiente | Revisión del diff y de las referencias |
+| V-4: fallo falso con instalación en el esquema de usuario | La prueba consulta también el directorio de ejecutables del esquema de usuario, donde `pip install --user` deja la orden; sigue sin mirar el PATH y sin omitirse | Suite superada; con ambos directorios simulados como ausentes, la prueba vuelve a fallar con código 1 |
 
 Siguiente tarea: **T2**, todavía sin iniciar. La ayuda provisional sin argumentos y el tratamiento definitivo del uso incorrecto se completarán en esa tarea.

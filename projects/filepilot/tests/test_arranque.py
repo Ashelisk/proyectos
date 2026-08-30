@@ -25,10 +25,21 @@ def test_modulo_muestra_ayuda(tmp_path):
     assert "filepilot" in resultado.stdout
 
 
-def test_orden_instalada_muestra_ayuda(tmp_path):
+def rutas_de_la_orden():
+    """Rutas donde el intérprete en uso instala sus ejecutables, sin mirar el PATH."""
     nombre = "filepilot.exe" if sys.platform == "win32" else "filepilot"
-    orden = Path(sysconfig.get_path("scripts")) / nombre
-    assert orden.is_file(), f"Falta el ejecutable del entorno bajo prueba: {orden}"
+    esquema_de_usuario = sysconfig.get_preferred_scheme("user")
+    return [
+        Path(sysconfig.get_path("scripts")) / nombre,
+        Path(sysconfig.get_path("scripts", esquema_de_usuario)) / nombre,
+    ]
+
+
+def test_orden_instalada_muestra_ayuda(tmp_path):
+    candidatas = rutas_de_la_orden()
+    instaladas = [ruta for ruta in candidatas if ruta.is_file()]
+    assert instaladas, f"Falta el ejecutable del entorno bajo prueba: {candidatas}"
+    orden = instaladas[0]
 
     resultado = ejecutar([orden, "--help"], tmp_path)
 
