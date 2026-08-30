@@ -1,47 +1,63 @@
-# Validación — T1: estructura e instalación
+# Validación — T1 y T2: arranque e invocación
 
-**Veredicto: cumple T1 en el entorno verificado.** La corrección de V-1 / V-4 evita que un ejecutable ajeno sustituya al ausente en el entorno aislado. No quedan hallazgos bloqueantes para T1. Esta revisión no modifica la aplicación, las pruebas ni las casillas de tareas.
+**Veredicto: no cumple completamente la revisión.** Los criterios explícitos de T2 sobre argumentos, ayuda y códigos de salida funcionan, sin regresiones observadas en T1. Queda V-5: los diagnósticos de uso incorrecto se emiten en inglés, en conflicto con RNF-3.
 
 ## Alcance y entorno
 
-Versión revisada: `27b02d5`. Fecha: 2026-08-30. Windows AMD64, Python 3.14.7 y pytest 9.1.1. Instalación editable existente en `.venv`, sin reconstruir el entorno. Revisión independiente de la corrección de V-1 / V-4; las correcciones anteriores de V-2 y V-3 se conservan.
+Versión revisada: `b9fe2ea`. Fecha: 2026-08-30. Windows AMD64, Python 3.14.7 y pytest 9.1.1. Instalación editable existente en `.venv`, sin reconstruir el entorno. Revisión independiente de T2 según [tasks.md](tasks.md), [plan.md](plan.md), [spec.md](spec.md) y la [constitución](../../docs/constitution.md).
 
-Alcance: [T1](tasks.md), según [plan.md](plan.md), [spec.md](spec.md) y la [constitución](../../docs/constitution.md). El cambio evaluado afecta a la prueba de arranque, la evidencia de tareas y este informe; no modifica la aplicación ni adelanta T2.
+No se han modificado código, pruebas, requisitos ni casillas. La validación de rutas pertenece a T3; el recorrido y el informe siguen pendientes. Que `analizar <ruta>` termine ahora en cero sin informe no se considera un fallo de T2.
 
 ## Evidencia ejecutada
 
 Suite completa desde `projects/filepilot/`, con un directorio temporal nuevo:
 
 ```powershell
-.\.venv\Scripts\python.exe -B -m pytest -q -rA -p no:cacheprovider --basetemp ../../.sdd-check/t1-final-review-1788117745362/suite
+.\.venv\Scripts\python.exe -B -m pytest -q -rA -p no:cacheprovider --basetemp ../../.sdd-check/t2-review-1788118239042/suite
 ```
 
-Resultado: **3 pruebas superadas, ninguna omitida**, en 0,34 s. Cubren la ayuda por módulo y ejecutable desde carpetas temporales ajenas al producto y la ausencia de dependencias declaradas de ejecución.
+Resultado: **10 pruebas superadas, ninguna omitida**, en 1,35 s: las tres de T1 y las siete de T2.
 
-Se ejecutó además `test_orden_instalada_muestra_ayuda` mediante `pytest.main` en procesos separados, sustituyendo `sysconfig.get_path`:
+Desde una carpeta temporal ajena al producto se ejecutaron además **24 invocaciones**, doce mediante el ejecutable del entorno y doce mediante su intérprete con `-I -B -m filepilot`:
 
-| Escenario controlado | Resultado observado | Evaluación |
-| --- | --- | --- |
-| Entorno aislado; ejecutables propio y de usuario ausentes | 1 fallo, código 1 | Detecta correctamente la instalación incompleta |
-| Entorno aislado; propio ausente y ejecutable ajeno en la ruta de usuario | 1 fallo, código 1; solo consulta el directorio del entorno | Falso positivo corregido |
-| Simulación de ejecución fuera de un entorno virtual; solo ejecutable de usuario | 1 prueba superada, código 0; consulta ambas rutas | Verifica la selección de rutas, no una instalación real con `--user` |
+- Sin subcomando, sin ruta, con opción desconocida, con subcomando desconocido, con argumento sobrante, con `--recursivo` sin ruta y con `--recursivo=si`: código uno, uso en la salida de error y salida estándar vacía.
+- Ayuda general y de `analizar`: código cero, ayuda en la salida estándar y salida de error vacía.
+- Ruta sola y ruta con ambas opciones, antes o después de ella: argumentos aceptados, código cero y ninguna salida, conforme al alcance provisional de T2.
 
-En los dos primeros casos, el fallo es el resultado esperado de la comprobación negativa, no un fallo de la suite normal. El entorno real cumple `sys.prefix != sys.base_prefix` y tiene `site.ENABLE_USER_SITE = False`. Para el tercer caso se igualó temporalmente `sys.base_prefix` a `sys.prefix`; no se creó otra instalación de Python.
-
-El ejecutable ajeno se generó únicamente dentro de `.sdd-check/t1-final-review-1788117745362/usuario-simulado/`, con el generador de lanzadores de la copia de distlib incluida en pip. Solo imprime `filepilot: ejecutable ajeno de prueba` y termina en cero, sin importar la aplicación. Se comprobó su ejecución real como subproceso. No se alteraron ejecutables instalados ni el directorio de usuario.
+Los errores comprobados no devuelven el código dos reservado para T3. La prueba de opciones verifica también que ambas están desactivadas por defecto y que se activan al indicarlas.
 
 ## Cumplimiento
 
 | Requisito o criterio | Evidencia | Resultado | Limitación |
 | --- | --- | --- | --- |
-| T1: ayuda por comando y módulo | Suite: ambos arranques superados | Cumple | Windows / Python 3.14.7; instalación existente |
-| T1: exigir el ejecutable del entorno aislado | Ausencia propia detectada incluso con un ejecutable ajeno disponible | Cumple | Escenario controlado con rutas sustituidas |
-| RNF-1: dependencias de ejecución | Prueba de metadatos superada | Cumple, parcial | Funcionamiento completo sin red pendiente de T13 |
-| Constitución: simplificación de argumentos | `cli.py` conserva `parse_args(argv)`, sin import de `sys` | Cumple | Inspección; aplicación sin cambios |
+| RF-2: uso incorrecto, salida de error y código uno | Suite y siete casos por cada entrada | Cumple | El idioma del diagnóstico se evalúa aparte |
+| RF-3 / RF-14: declaración de opciones | Prueba de argumentos y ejecución directa | Cumple, parcial | Recorrido y exclusiones pendientes |
+| T2: ayuda general y del subcomando | Ambas entradas con código cero | Cumple | No implica análisis implementado |
+| RNF-3: mensajes de error en español | Diagnósticos de argumentos emitidos en inglés | Falla | V-5 |
+| T1: arranque y dependencias declaradas | Tres pruebas anteriores superadas | Cumple | Instalación existente; sin reconstrucción |
+| RNF-1: funcionamiento completo sin red | No verificado en este incremento | No verificado | Pendiente de T13 |
 | RNF-2 y versión mínima del plan | Python 3.11, Linux y macOS no ejecutados | No verificado | Pendiente de T12 |
 
-## Cierre
+## V-5 — Diagnósticos de uso incorrecto en inglés
 
-**V-1 / V-4 resuelto para T1.** [test_arranque.py](../../tests/test_arranque.py) exige el ejecutable del entorno virtual cuando `sys.prefix != sys.base_prefix`, sin consultar el esquema de usuario ni el PATH y sin omitir su ausencia. La alternativa fuera del entorno virtual no acredita la identidad de una distribución instalada con `--user`; esa modalidad no se declara validada.
+**Prioridad media.** [cli.py](../../filepilot/cli.py), método `AnalizadorDeOrdenes.error`: imprime directamente el mensaje recibido de `argparse`. Ejemplos reproducidos con la orden instalada:
 
-V-2 y V-3 conservan sus correcciones. El informe identifica la versión y los resultados actuales, sin mezclar la evidencia del fallo anterior con la verificación de la corrección. No es necesario cambiar la spec ni el plan. Siguiente tarea: **T2**, todavía sin iniciar.
+```text
+filepilot analizar
+filepilot analizar: error: the following arguments are required: ruta
+
+filepilot analizar . --inexistente
+filepilot: error: unrecognized arguments: --inexistente
+```
+
+RF-2 queda cubierto en canal y código, pero RNF-3 exige mensajes de error en español. Aunque las tareas concentran la referencia a RNF-3 en T10, esa regla también afecta a los diagnósticos ya emitidos por T2. La prueba actual comprueba el uso y el código, sin verificar el idioma ni el diagnóstico de la causa.
+
+**Corrección:** emitir en español la causa concreta —ruta obligatoria ausente, opción o subcomando desconocido— y verificarla con pruebas de comportamiento, conservando código uno y salida de error. No sustituirla por un mensaje genérico que oculte la causa ni debilitar RNF-3.
+
+## Estado conservado y siguiente paso
+
+V-1 / V-4: la prueba de T1 mantiene la selección exclusiva del ejecutable del entorno virtual; no ha cambiado desde `27b02d5`. Su comprobación negativa de aislamiento sigue siendo la evidencia de aquella versión y no se ha repetido en esta revisión. La instalación real con `--user` continúa sin validarse.
+
+V-2: se conserva `parse_args(argv)`; el import de `sys` añadido en T2 sí es necesario para escribir en `sys.stderr`. V-3: README y tareas reflejan T2 implementada y T3 pendiente.
+
+Resolver V-5 y repetir las pruebas antes de cerrar T2 sin observaciones. No hace falta cambiar la spec ni el plan. T3 no se ha iniciado.
