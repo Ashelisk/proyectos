@@ -54,7 +54,7 @@ Persona que administra sus propios archivos desde la terminal, en Linux, macOS o
 ### Seguridad y fallos
 
 - RF-10: El análisis será de solo lectura: la herramienta no creará, moverá, renombrará ni eliminará ningún archivo ni directorio, incluidas las carpetas de destino que propone, y no abrirá el contenido de los archivos. Un archivo se considera analizable cuando pueden obtenerse su nombre y su tamaño.
-- RF-11: Si la ruta indicada no existe, no es un directorio o su lectura no está permitida, la herramienta describirá el problema y la ruta afectada en la salida de error y terminará con código dos, sin emitir informe. El mensaje distinguirá cuál de las tres causas se ha producido.
+- RF-11: Si la ruta indicada no existe, no es un directorio o su lectura no está permitida, la herramienta describirá el problema y la ruta afectada en la salida de error y terminará con código dos, sin emitir informe. El mensaje distinguirá cuál de esas tres causas se ha producido. Una ruta vacía se rechazará del mismo modo, indicando que no se ha señalado ninguna carpeta; nunca se interpretará como el directorio actual. Cualquier otro fallo al resolver o leer la carpeta raíz, como un bucle de enlaces o un error de entrada y salida, se comunicará igualmente con código dos indicando la ruta y la causa, en lugar de interrumpir la ejecución.
 - RF-13: Cuando un elemento falle durante el recorrido —por ejemplo, si desaparece entre su enumeración y la consulta de su tamaño, o si su lectura da error—, el análisis continuará con los demás y esa entrada se contabilizará entre los omitidos con su motivo real conforme a RF-9. Cada fallo generará además un aviso en la salida de error con la ruta afectada y la causa, en español, conforme a RNF-3; el resumen conservará el recuento correspondiente. Cuando el informe se haya emitido pero alguna entrada haya quedado omitida por falta de permisos o por error de lectura, la herramienta terminará con código tres. Las omisiones por ocultación o por enlace simbólico no alteran el código de salida.
 
 ## Requisitos no funcionales
@@ -69,6 +69,7 @@ Persona que administra sus propios archivos desde la terminal, en Linux, macOS o
 - Directorio en el que todos los elementos quedan excluidos: RF-12 junto con los recuentos de RF-9.
 - Elementos ocultos, enlaces simbólicos, permisos denegados y fallos de lectura durante el recorrido: RF-9, RF-13, RF-14 y RF-15.
 - Raíz oculta, indicada directamente o mediante un enlace: RF-14 y RF-16; se analiza sin exigir `--incluir-ocultos`, manteniendo las exclusiones para su contenido.
+- Ruta vacía, bucle de enlaces o fallo al resolver la raíz: RF-11; ninguno de estos casos analiza el directorio actual ni interrumpe la ejecución con un error sin tratar.
 - Archivos con varios puntos en el nombre, como `copia.tar.gz`: RF-5, que atiende a la última extensión.
 - Nombres que empiezan por punto y carecen de otra extensión: RF-15 los trata como ocultos antes que como «sin extensión» de RF-6.
 

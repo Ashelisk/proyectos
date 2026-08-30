@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from filepilot.cli import CODIGO_RUTA_INVALIDA, RutaInvalida, resolver_raiz
+from filepilot.cli import CODIGO_RUTA_INVALIDA, RutaInvalida, main, resolver_raiz
 
 
 def crear_enlace(enlace: Path, destino: Path) -> Path:
@@ -32,6 +32,11 @@ FALLOS_AL_CONSULTAR = [
         PermissionError(errno.EACCES, "Permission denied"), "permiso denegado", id="sin_permiso"
     ),
     pytest.param(OSError(errno.EIO, "Input/output error"), "error de entrada y salida", id="fallo"),
+    pytest.param(
+        OSError(errno.ELOOP, "Too many levels of symbolic links"),
+        "demasiados enlaces simbólicos",
+        id="bucle_de_enlaces",
+    ),
 ]
 
 
@@ -67,6 +72,37 @@ def test_carpeta_ilegible_conserva_la_causa(monkeypatch, tmp_path):
     mensaje = str(problema.value)
     assert "permiso denegado" in mensaje
     assert str(tmp_path) in mensaje
+
+
+def test_bucle_de_enlaces_al_resolver_termina_en_dos(monkeypatch, capsys, tmp_path):
+    """Antes de Python 3.13, `resolve` señala el bucle con `RuntimeError`.
+
+    Ese error no deriva de `OSError`: sin tratarlo, la ejecución terminaría con
+    un rastro de excepción en lugar del código dos de RF-11.
+    """
+
+    def resolver(self, strict=False):
+        raise RuntimeError(f"Symlink loop from {str(self)!r}")
+
+    monkeypatch.setattr(Path, "resolve", resolver)
+
+    codigo = main(["analizar", str(tmp_path)])
+
+    salida = capsys.readouterr()
+    assert codigo == CODIGO_RUTA_INVALIDA
+    assert "demasiados enlaces simbólicos" in salida.err
+    assert str(tmp_path) in salida.err
+    assert salida.out == ""
+
+
+def test_ruta_vacia_termina_en_dos(capsys):
+    """RF-11: una ruta vacía se rechaza; no equivale al directorio actual."""
+    codigo = main(["analizar", ""])
+
+    salida = capsys.readouterr()
+    assert codigo == CODIGO_RUTA_INVALIDA
+    assert "la ruta indicada está vacía" in salida.err
+    assert salida.out == ""
 
 
 def test_ruta_vacia_no_analiza_el_directorio_actual(tmp_path):

@@ -94,13 +94,15 @@ class RutaInvalida(Exception):
     """La ruta indicada no puede analizarse; su texto describe la causa (RF-11)."""
 
 
+BUCLE_DE_ENLACES = "demasiados enlaces simbólicos encadenados"
+
 # Causas en español a partir del código del fallo, no del idioma del sistema.
 FALLOS_CONOCIDOS = {
     errno.EACCES: "permiso denegado",
     errno.EPERM: "operación no permitida",
     errno.ENOENT: "no existe",
     errno.ENOTDIR: "no es un directorio",
-    errno.ELOOP: "demasiados enlaces simbólicos encadenados",
+    errno.ELOOP: BUCLE_DE_ENLACES,
     errno.ENAMETOOLONG: "el nombre es demasiado largo",
     errno.EIO: "error de entrada y salida",
 }
@@ -137,6 +139,9 @@ def resolver_raiz(ruta: str) -> Path:
         destino = Path(ruta).resolve()
     except OSError as fallo:
         raise RutaInvalida(f"no se puede resolver la ruta «{ruta}»: {describir_fallo(fallo)}") from fallo
+    except RuntimeError as fallo:
+        # Antes de Python 3.13, `resolve` señala así un bucle de enlaces.
+        raise RutaInvalida(f"no se puede resolver la ruta «{ruta}»: {BUCLE_DE_ENLACES}") from fallo
 
     referencia = citar(ruta, destino)
     try:
