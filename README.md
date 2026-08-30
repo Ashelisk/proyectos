@@ -1,10 +1,23 @@
 # Proyectos con SDD
 
-Este espacio reúne el método de trabajo para los seis proyectos acordados. El primer entregable es un paquete de nueve skills: una coordinadora y ocho fases. Todavía no se ha empezado a programar FilePilot.
+Repositorio para proyectos CLI, web y móviles con Spec-Driven Development (SDD). Incluye un paquete reutilizable de nueve skills: una coordinadora y ocho fases.
 
-**FilePilot:** [constitución definida](projects/filepilot/docs/constitution.md). CLI local en Python para Linux, macOS y Windows, sin cuentas ni servicios externos; sin sobrescritura de archivos ni eliminación automática de duplicados. Carpeta: `projects/filepilot/`. Siguiente fase: entrevista para definir el alcance de la primera especificación; sin código todavía.
+**Estado de FilePilot:** [constitución definida](projects/filepilot/docs/constitution.md). CLI local en Python para Linux, macOS y Windows, sin cuentas ni servicios externos; sin sobrescritura de archivos ni eliminación automática de duplicados. Carpeta: `projects/filepilot/`. Pendiente: definir el alcance de la primera especificación. Aún no hay código ni compatibilidad verificada.
 
-## Qué hace cada skill
+## Uso y adaptación
+
+El método puede aplicarse manualmente o con asistencia de IA. La documentación define las reglas, los requisitos y los criterios de validación de cada producto. Las skills son una ayuda opcional para agentes; no son necesarias para trabajar con SDD.
+
+Para desarrollar o adaptar un producto sin IA:
+
+1. Revisar su constitución y definir los principios pendientes; en un producto nuevo, crear `docs/constitution.md`.
+2. Especificar el comportamiento y los criterios de aceptación en `specs/NNN-nombre/spec.md`, resolviendo las dudas antes del diseño.
+3. Preparar el plan técnico y las tareas; implementar y comprobar cada comportamiento especificado.
+4. Registrar la evidencia de validación. Si cambia el comportamiento requerido, actualizar primero la spec y después los documentos, código y pruebas afectados.
+
+Cada producto conserva sus propias decisiones técnicas. El paquete SDD puede reutilizarse sin adoptar el lenguaje, los requisitos ni el dominio de FilePilot.
+
+## Skills para agentes de IA
 
 | Skill | Responsabilidad | Resultado habitual |
 | --- | --- | --- |
@@ -16,45 +29,45 @@ Este espacio reúne el método de trabajo para los seis proyectos acordados. El 
 | `sdd-tareas` | Descomponer en trabajo pequeño y comprobable | `tasks.md` |
 | `sdd-implementacion` | Programar las tareas autorizadas y verificarlas | Código, pruebas y evidencia |
 | `sdd-validacion` | Contrastar cada requisito con resultados reales | `validation.md` |
-| `sdd-cambio` | Mantener la spec al evolucionar el producto | `changes.md` y documentos afectados |
+| `sdd-cambio` | Mantener la spec al evolucionar el producto | Spec y documentos afectados |
 
 Las rutas son relativas a cada producto; los documentos de una funcionalidad se agrupan en `specs/NNN-nombre/`. Se conservan las convenciones existentes cuando el producto ya tiene otra estructura.
 
-## Cómo usarlas
+### Invocación
 
-Puedes pedir el trabajo con lenguaje natural, por ejemplo:
+Ejemplo de petición para iniciar una especificación:
 
-> Empecemos FilePilot con SDD. Prepara su constitución y el borrador de la primera especificación. No programes todavía.
+> Prepara la primera especificación de FilePilot a partir de su constitución. Pregunta por el alcance y los comportamientos pendientes. No implementes código.
 
-El agente pregunta y espera tus respuestas antes de fijar enfoque, lenguaje o requisitos. Después actualiza la regla o requisito correspondiente, sin copiar la entrevista. La constitución contiene unos pocos principios; la spec detalla comportamientos y errores sin redundancias. Ninguno incluye historial de conversación ni comparativas ya resueltas.
+Al crear una constitución o especificación, el agente pregunta por las decisiones pendientes y espera respuestas antes de fijarlas. Conserva las decisiones vigentes y actualiza la regla o requisito correspondiente, sin copiar la entrevista. La constitución contiene pocos principios; la spec detalla comportamientos y errores sin redundancias ni historial de conversación.
 
 También puedes mencionar una fase por su nombre, por ejemplo `$sdd-clarificacion`, para revisar una spec, o `$sdd-validacion` para comprobar una entrega. La selección concreta de skills en la interfaz depende de la versión de Codex; el nombre y una petición clara también permiten expresar la intención.
 
 Para continuar un incremento completo:
 
-> Continúa FilePilot con SDD hasta completar el incremento definido. Si faltan decisiones, pregúntame y actualiza las reglas o requisitos; después trabaja dentro de lo acordado.
+> Implementa el incremento especificado de FilePilot siguiendo su plan y tareas. Consulta las decisiones pendientes antes de avanzar en el trabajo afectado y valida el resultado contra la spec.
 
 Una petición de «solo especificar» acaba en documentos. Una petición de construir un incremento puede recorrer sus fases y tareas, pero no permite saltarse las entrevistas ni sustituir respuestas por suposiciones. Fuera de esas decisiones de definición, no hace falta pedir permiso rutinario para cada paso de trabajo.
 
-## Skills y subagentes
+### Revisiones con subagentes
 
 Las skills guardan instrucciones reutilizables; no son procesos que permanezcan trabajando. Un subagente puede aplicar una de esas skills en una revisión concreta. Los mejores puntos para ello son clarificación y validación, cuando una mirada independiente aporta valor.
 
-No se configuran nueve agentes permanentes ni se ejecutan las fases dependientes en paralelo. La coordinadora puede encargar una revisión acotada si el entorno lo permite; también puede completar el flujo localmente. La guía está en [revisiones](skills/sdd-coordinador/references/revisiones.md).
+La coordinadora puede encargar una revisión independiente si el entorno lo permite o completarla localmente. Las fases mantienen sus dependencias. La guía está en [revisiones](skills/sdd-coordinador/references/revisiones.md).
 
 ## Fuentes y adaptación
 
-El flujo toma como referencia [Hello SDD de MoureDev](https://github.com/mouredev/hello-sdd). Las instrucciones del paquete son una adaptación propia: mantienen requisitos identificados, diseño previo, pruebas de comportamiento y cambios comenzando en la spec. Por decisión expresa del usuario, preguntar y esperar respuestas es obligatorio al construir la constitución y definir las specs. No se fija un número arbitrario de preguntas ni una duración exacta por tarea.
+El flujo toma como referencia [Hello SDD de MoureDev](https://github.com/mouredev/hello-sdd). El paquete mantiene requisitos identificados, diseño previo, pruebas de comportamiento y cambios comenzando en la spec.
 
-El formato y el descubrimiento de skills se contrastaron con [la documentación oficial de OpenAI](https://learn.chatgpt.com/docs/build-skills), consultada el 2026-08-30.
+Referencia para el formato y descubrimiento de skills: [documentación oficial de OpenAI](https://learn.chatgpt.com/docs/build-skills).
 
 ## Copias y reutilización
 
-`skills/` conserva las fuentes editables del paquete. Hay dos copias de descubrimiento, cada una en la ruta que lee su herramienta: `.claude/skills/` para Claude Code y `C:/Users/picop/.agents/skills/` para Codex. Los 19 archivos de ambas coinciden con las fuentes. La instalación y sus límites constan en [el informe del toolkit](specs/000-sdd-toolkit/validation.md). No se han modificado credenciales, modelos ni servicios.
+`skills/` conserva las fuentes editables. El repositorio incluye una copia en `.claude/skills/` para Claude Code. Para utilizarlas en Codex, copia las nueve carpetas `sdd-*` a `~/.agents/skills/` en el equipo de destino, revisando antes cualquier skill existente con el mismo nombre.
 
-Después de cambiar una skill, hay que sincronizar las dos copias y verificar por SHA-256 que coinciden con la fuente. Evita instalar a la vez otra copia con el mismo nombre en el ámbito del proyecto, porque Codex puede mostrar ambas. Si una skill instalada no aparece, reinicia Codex para refrescar su catálogo; la detección visual no se sustituye por una comprobación de archivos.
+Después de editar una skill, sincroniza `.claude/skills/` y las copias personales instaladas; verifica por SHA-256 que coinciden con la fuente. Evita duplicar nombres de skills en distintos ámbitos de Codex. Comprueba su disponibilidad en la herramienta: la igualdad de archivos no demuestra que se hayan cargado. El [informe del toolkit](specs/000-sdd-toolkit/validation.md) recoge las comprobaciones realizadas y sus límites.
 
-## Proyectos acordados
+## Proyectos previstos
 
 1. **FilePilot · CLI:** organización segura de archivos.
 2. **API Sentinel · CLI:** comprobación automatizada de APIs.

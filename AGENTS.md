@@ -2,7 +2,7 @@
 
 ## Contexto
 
-El usuario ha elegido desarrollar seis proyectos progresivos con Spec-Driven Development: FilePilot, API Sentinel, Freelance Desk, Pantry Pocket, ReservaFlow y FieldOps. CLI, web y móvil comparten el método; cada producto tendrá su propia constitución y especificaciones.
+El repositorio organiza seis proyectos progresivos con Spec-Driven Development: FilePilot, API Sentinel, Freelance Desk, Pantry Pocket, ReservaFlow y FieldOps. CLI, web y móvil comparten el método; cada producto tendrá su propia constitución y especificaciones.
 
 ## Método de trabajo
 
@@ -15,6 +15,7 @@ El usuario ha elegido desarrollar seis proyectos progresivos con Spec-Driven Dev
 - Especificaciones: entrevista al iniciar una nueva spec y pregunta al revisar una existente cuando haya decisiones sin resolver. Mantén el documento como entrevista en curso hasta incorporar las respuestas necesarias. No sustituyas preguntas por supuestos ni avances al trabajo dependiente.
 - Documentación SDD: constituciones breves (para proyectos pequeños, unos 5–7 principios y 15 líneas) y specs explicativas sin redundancia. Escribe reglas y requisitos vigentes; excluye historiales, transcripciones, perfil del usuario, comparativas ya resueltas y apartados de quién decidió qué. Las respuestas actualizan el contenido, no se acumulan como un registro. No traslades el historial eliminado a otros archivos.
 - Redacción profesional: describe el producto, sus capacidades, restricciones y decisiones técnicas. Omite motivaciones personales o laborales, autoevaluaciones y objetivos didácticos. Menciona herramientas o métodos únicamente cuando aporten una instrucción técnica útil; conserva las limitaciones y el estado real del producto.
+- Documentación autónoma: escribe para cualquier persona que use o adapte el proyecto, con IA o sin ella. No presupongas acceso al chat ni al autor, ni aludas a acuerdos, peticiones o intercambios previos entre el creador y un agente. Limita las referencias a IA a instrucciones técnicas necesarias y presenta su uso como opcional. Las instrucciones dirigidas a agentes mantienen las entrevistas obligatorias; los documentos del producto deben poder utilizarse también de forma manual.
 - Respeta el alcance solicitado: preparar skills o documentos no implica empezar una aplicación. Conserva respuestas explícitas para no repetirlas. Estas conversaciones de definición son obligatorias; fuera de ellas, no pidas confirmación rutinaria al pasar de fase.
 - Utiliza subagentes solo para encargos independientes que aporten valor, conforme a las capacidades y permisos de la sesión. No es necesario crear un agente permanente por fase.
 - Habla y documenta en español salvo indicación contraria. Explica las decisiones técnicas con claridad y precisión.
