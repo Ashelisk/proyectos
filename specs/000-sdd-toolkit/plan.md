@@ -18,6 +18,8 @@ Por defecto: tres envíos, diez minutos por envío y dos dólares de presupuesto
 
 Verificación: datos desechables para aislamiento Git, continuidad, límites, concurrencia, respuestas inválidas y revisión de una entrega alterada; después dos intercambios reales de solo lectura. La aprobación técnica exige pruebas y diff revisados, no solo que el CLI devuelva cero.
 
+RF-19: perfil explícito por encargo con `claude-opus-5` y `xhigh`. Los ajustes de `enviar --modelo/--esfuerzo` requieren motivo cuando cambian el perfil. La revisión puede marcar una corrección fallida; dos marcas consecutivas elevan a `max` el siguiente envío disponible, sin contar como corrección el rechazo de la entrega inicial. Se conservan identificador de sesión y límites. El nivel se pasa también en el entorno del proceso hijo para evitar que una variable heredada lo sustituya; no se modifica la configuración global. El estado registra perfil y modelos comunicados por el CLI. Las pruebas anteriores del puente conservan su alcance, pero no acreditan esta selección hasta verificarla.
+
 ## Ajuste CH-1 — Entrevistas
 
 Las instrucciones y metadatos de constitución, especificación y coordinación deben cumplir RF-10 a RF-12: preguntar las decisiones pendientes y conservar las ya resueltas. Propagar la regla a `AGENTS.md` y la guía. Tras modificar skills, repetir la validación de formato, revisar la coherencia de las reglas y sincronizar ambas copias de descubrimiento.

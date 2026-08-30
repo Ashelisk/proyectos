@@ -34,6 +34,9 @@ PROTECTED_FILES = {"AGENTS.md", "CLAUDE.md", "constitution.md"}
 ROUNDS = 3
 TIMEOUT = 600
 BUDGET = 2.0
+DEFAULT_MODEL = "claude-opus-5"
+DEFAULT_EFFORT = "xhigh"
+EFFORTS = ("low", "medium", "high", "xhigh", "max")
 
 
 def git(repo, *args):
@@ -156,6 +159,8 @@ def init_run(repo, name, task, context, edits, rounds=ROUNDS, timeout=TIMEOUT, b
         "session_id": str(uuid.uuid4()), "envios": 0, "max_envios": rounds,
         "timeout": timeout, "presupuesto_usd": budget, "coste_estimado_usd": 0.0,
         "estado": "listo", "huella": fingerprint(worktree),
+        "perfil": {"modelo": DEFAULT_MODEL, "esfuerzo": DEFAULT_EFFORT, "motivo": "Perfil base"},
+        "correcciones_fallidas": 0,
     }
     write_json(directory / "estado.json", state)
     return state
@@ -164,6 +169,7 @@ def init_run(repo, name, task, context, edits, rounds=ROUNDS, timeout=TIMEOUT, b
 def claude_arguments(state):
     args = [
         "claude", "-p", "--output-format", "json", "--json-schema", json.dumps(SCHEMA),
+        "--model", state["perfil"]["modelo"], "--effort", state["perfil"]["esfuerzo"],
         "--restricted", "--permission-mode", "dontAsk", "--setting-sources", "",
         "--strict-mcp-config", "--mcp-config", '{"mcpServers":{}}', "--no-chrome",
         "--tools", "Read,Grep,Glob,Edit,Write" if state["edicion"] else "Read,Grep,Glob",
@@ -189,9 +195,13 @@ def run_claude(args, cwd, message, timeout):
     if not executable:
         raise BridgeError("Claude Code no está disponible en PATH.")
     args = [executable, *args[1:]]
+    environment = {**os.environ, "PYTHONIOENCODING": "utf-8"}
+    if "--effort" in args:
+        # Esta variable prevalece sobre el flag; se fija solo en el proceso hijo.
+        environment["CLAUDE_CODE_EFFORT_LEVEL"] = args[args.index("--effort") + 1]
     process = subprocess.Popen(
         args, cwd=cwd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-        text=True, encoding="utf-8", env={**os.environ, "PYTHONIOENCODING": "utf-8"},
+        text=True, encoding="utf-8", env=environment,
         creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
         start_new_session=os.name != "nt",
     )
@@ -234,7 +244,7 @@ def validate_response(response, session_id):
     return result, cost
 
 
-def send_run(repo, name, message):
+def send_run(repo, name, message, model=None, effort=None, reason=None):
     directory, _ = load_run(repo, name)
     with locked(directory):
         _, state = load_run(repo, name)
@@ -249,8 +259,24 @@ def send_run(repo, name, message):
         worktree = Path(state["worktree"])
         if fingerprint(worktree) != state["huella"]:
             raise BridgeError("La copia cambió fuera del ciclo; revisa el estado antes de continuar.")
+        previous = state.get("perfil", {"modelo": DEFAULT_MODEL, "esfuerzo": DEFAULT_EFFORT,
+                                        "motivo": "Perfil base"})
+        profile = {"modelo": model or previous["modelo"], "esfuerzo": effort or previous["esfuerzo"],
+                   "motivo": reason or previous["motivo"]}
+        if (model is None and effort is None and state.get("correcciones_fallidas", 0) >= 2
+                and profile["esfuerzo"] != "max"):
+            profile.update(esfuerzo="max", motivo="Dos correcciones consecutivas verificadas como fallidas")
+        elif (((profile["modelo"], profile["esfuerzo"]) != (previous["modelo"], previous["esfuerzo"])
+               or (state.get("correcciones_fallidas", 0) >= 2 and profile["esfuerzo"] != "max"))
+              and not (reason or "").strip()):
+            raise BridgeError("Cambiar el perfil o evitar la escalada requiere un motivo técnico.")
+        if not re.fullmatch(r"claude-[a-z0-9-]+", profile["modelo"]) or profile["esfuerzo"] not in EFFORTS:
+            raise BridgeError("Indica un modelo Claude con identificador completo y un esfuerzo admitido.")
+        state["perfil"] = profile
+        state["es_correccion"] = state["estado"] == "corregir"
         state["envios"] += 1
         state["estado"] = "ejecutando"
+        write_json(directory / f'perfil-{state["envios"]}.json', profile)
         write_json(directory / "estado.json", state)
         request = ("Tarea autorizada: " + state["tarea"] + "\n"
                    "Lee estas instrucciones y documentos antes de actuar: " +
@@ -264,6 +290,10 @@ def send_run(repo, name, message):
             result, cost = validate_response(response, state["session_id"])
             state["coste_estimado_usd"] += cost
             state["respuesta"] = result
+            usage = response.get("modelUsage", {})
+            if not isinstance(usage, dict) or profile["modelo"] not in usage:
+                raise BridgeError("El CLI no acredita el modelo solicitado; no se acepta una sustitución silenciosa.")
+            state["modelos_reportados"] = sorted(usage)
             if os.fsdecode(git(worktree, "rev-parse", "HEAD")).strip() != state["base"]:
                 raise BridgeError("El programador modificó HEAD; se requiere revisión manual.")
             outside = [path for path in changed_paths(worktree) if not allowed_change(path, state["edicion"])]
@@ -284,7 +314,7 @@ def send_run(repo, name, message):
         return state
 
 
-def review_run(repo, name, expected, verdict, notes):
+def review_run(repo, name, expected, verdict, notes, failed_correction=False):
     directory, _ = load_run(repo, name)
     with locked(directory):
         _, state = load_run(repo, name)
@@ -296,7 +326,12 @@ def review_run(repo, name, expected, verdict, notes):
             raise BridgeError("La revisión necesita un veredicto y evidencia o una pregunta concreta.")
         if expected != state["huella"] or fingerprint(Path(state["worktree"])) != expected:
             raise BridgeError("La revisión no corresponde a la versión actual de los archivos.")
-        state["revision"] = {"veredicto": verdict, "evidencia": notes, "huella": expected}
+        if failed_correction and (verdict != "corregir" or not state.get("es_correccion")
+                                  or state["estado"] != "revision"):
+            raise BridgeError("Solo puede marcarse fallida una corrección ya ejecutada, no la entrega inicial.")
+        state["correcciones_fallidas"] = state.get("correcciones_fallidas", 0) + 1 if failed_correction else 0
+        state["revision"] = {"veredicto": verdict, "evidencia": notes, "huella": expected,
+                             "correccion_fallida": failed_correction}
         state["estado"] = {"aprobar": "aprobado", "corregir": "corregir", "consultar": "decision"}[verdict]
         write_json(directory / f'revision-{state["envios"]}.json', state["revision"])
         write_json(directory / "estado.json", state)
@@ -318,11 +353,16 @@ def main():
     send = commands.add_parser("enviar", help="Enviar un encargo UTF-8 y esperar su resultado.")
     send.add_argument("id")
     send.add_argument("--mensaje", type=Path, required=True)
+    send.add_argument("--modelo", help="Identificador completo; cambiarlo requiere --motivo.")
+    send.add_argument("--esfuerzo", choices=EFFORTS, help="Cambiar el nivel requiere --motivo.")
+    send.add_argument("--motivo", help="Justificación por exigencia de la tarea o correcciones fallidas.")
     review = commands.add_parser("revisar", help="Registrar el veredicto del coordinador.")
     review.add_argument("id")
     review.add_argument("--huella", required=True)
     review.add_argument("--veredicto", choices=("aprobar", "corregir", "consultar"), required=True)
     review.add_argument("--evidencia", type=Path, required=True)
+    review.add_argument("--correccion-fallida", action="store_true",
+                        help="La corrección ejecutada sigue incumpliendo el requisito; adjuntar evidencia.")
     status = commands.add_parser("estado", help="Consultar una tarea sin ejecutarla.")
     status.add_argument("id")
     options = parser.parse_args()
@@ -331,10 +371,11 @@ def main():
             result = init_run(options.repo, options.id, options.tarea, options.contexto, options.editar,
                               options.rondas, options.segundos, options.presupuesto_usd)
         elif options.command == "enviar":
-            result = send_run(options.repo, options.id, options.mensaje.read_text(encoding="utf-8"))
+            result = send_run(options.repo, options.id, options.mensaje.read_text(encoding="utf-8"),
+                              options.modelo, options.esfuerzo, options.motivo)
         elif options.command == "revisar":
             result = review_run(options.repo, options.id, options.huella, options.veredicto,
-                                options.evidencia.read_text(encoding="utf-8"))
+                                options.evidencia.read_text(encoding="utf-8"), options.correccion_fallida)
         else:
             result = load_run(options.repo, options.id)[1]
         print(json.dumps(result, ensure_ascii=True, indent=2))

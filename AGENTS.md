@@ -24,6 +24,8 @@ El repositorio organiza seis proyectos progresivos con Spec-Driven Development: 
 
 Cuando se autorice el flujo Codex revisor / Claude Code programador, utiliza el [puente local](tools/puente_agentes/README.md). Codex mantiene el ciclo de encargos, pruebas y correcciones dentro de la tarea autorizada hasta validarla o detectar una decisión pendiente, un bloqueo o un límite. No termina el turno solo para preguntar si debe reenviar una corrección técnica. Claude actúa únicamente como programador, no invoca el puente ni se aprueba a sí mismo. El coordinador controla documentos compartidos, integración y Git; ningún agente amplía el alcance ni elude los permisos. Preparar el puente no autoriza nuevas tareas de producto.
 
+El perfil base del programador en este puente es Opus 5 con esfuerzo extra (`claude-opus-5`, `xhigh`). Ajusta esfuerzo o modelo solo por exigencia de la tarea o correcciones fallidas, registrando un motivo técnico; prioriza cambiar el esfuerzo. Marca las correcciones fallidas con evidencia: dos consecutivas elevan a `max` el siguiente envío permitido. No cuentes como tal la entrega inicial, una limitación del entorno ni una preferencia estética. Mantén los límites de rondas, presupuesto y permisos; no amplíes ninguno silenciosamente.
+
 ## Control de versiones
 
 - Al completar cada cambio importante, revisa el diff, ejecuta las comprobaciones pertinentes y crea un commit con un mensaje claro en español. Agrupa cambios relacionados; no crees un commit por cada ajuste menor.

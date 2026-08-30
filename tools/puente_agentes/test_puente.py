@@ -1,5 +1,6 @@
 """Contrato del puente con repositorios desechables y transporte simulado."""
 
+import os
 import subprocess
 import sys
 import tempfile
@@ -38,6 +39,7 @@ class PuenteTests(unittest.TestCase):
         session = args[args.index("--session-id") + 1] if "--session-id" in args else args[args.index("--resume") + 1]
         return {"type": "result", "subtype": "success", "session_id": session,
                 "total_cost_usd": 0.05, "permission_denials": [],
+                "modelUsage": {args[args.index("--model") + 1]: {}},
                 "structured_output": {"estado": "entregado", "resumen": "Lectura completa",
                                       "cambios": [], "pruebas": [], "preguntas": []}}
 
@@ -164,6 +166,85 @@ class PuenteTests(unittest.TestCase):
         with self.assertRaisesRegex(puente.BridgeError, "tiempo agotado"):
             puente.run_claude([sys.executable, "-c", "import time; time.sleep(30)"],
                              self.repo, "", 0.1)
+
+    @patch("puente.run_claude")
+    def test_opus_extra_explicito_incluso_al_reanudar(self, transport):
+        transport.side_effect = self.response
+        self.init()
+        first = puente.send_run(self.repo, "caso", "Lee.")
+        puente.review_run(self.repo, "caso", first["huella"], "corregir", "Amplía la comprobación.")
+        second = puente.send_run(self.repo, "caso", "Continúa.")
+        for call in transport.call_args_list:
+            args = call.args[0]
+            self.assertEqual(args[args.index("--model") + 1], "claude-opus-5")
+            self.assertEqual(args[args.index("--effort") + 1], "xhigh")
+        self.assertEqual(first["session_id"], second["session_id"])
+
+    @patch("puente.run_claude")
+    def test_ajuste_requiere_motivo_y_se_conserva(self, transport):
+        transport.side_effect = self.response
+        self.init()
+        with self.assertRaises(puente.BridgeError):
+            puente.send_run(self.repo, "caso", "Lee.", effort="medium")
+        transport.assert_not_called()
+        state = puente.send_run(self.repo, "caso", "Lee.", model="claude-sonnet-5",
+                                effort="medium", reason="Lectura mecánica sin cambios de código.")
+        self.assertEqual(state["perfil"]["modelo"], "claude-sonnet-5")
+        puente.review_run(self.repo, "caso", state["huella"], "corregir", "Comprobación adicional.")
+        puente.send_run(self.repo, "caso", "Continúa.")
+        args = transport.call_args.args[0]
+        self.assertEqual(args[args.index("--effort") + 1], "medium")
+
+    @patch("puente.run_claude")
+    def test_dos_correcciones_fallidas_suben_a_max(self, transport):
+        transport.side_effect = self.response
+        self.init(rounds=4)
+        initial = puente.send_run(self.repo, "caso", "Entrega inicial.")
+        with self.assertRaises(puente.BridgeError):
+            puente.review_run(self.repo, "caso", initial["huella"], "corregir", "No es corrección.", failed_correction=True)
+        puente.review_run(self.repo, "caso", initial["huella"], "corregir", "Defecto demostrado.")
+        for _ in range(2):
+            state = puente.send_run(self.repo, "caso", "Corrige el defecto.")
+            self.assertEqual(state["perfil"]["esfuerzo"], "xhigh")
+            puente.review_run(self.repo, "caso", state["huella"], "corregir", "Persiste el defecto.", failed_correction=True)
+        with self.assertRaisesRegex(puente.BridgeError, "motivo técnico"):
+            puente.send_run(self.repo, "caso", "No escales sin justificación.", effort="xhigh")
+        self.assertEqual(transport.call_count, 3)
+        state = puente.send_run(self.repo, "caso", "Corrige con mayor esfuerzo.")
+        self.assertEqual(state["perfil"]["esfuerzo"], "max")
+        self.assertEqual(state["max_envios"], 4)
+        self.assertEqual(state["presupuesto_usd"], 2.0)
+
+    @patch("puente.run_claude")
+    def test_escalada_no_amplia_limites(self, transport):
+        transport.side_effect = self.response
+        self.init()
+        state = puente.send_run(self.repo, "caso", "Entrega.")
+        puente.review_run(self.repo, "caso", state["huella"], "corregir", "Defecto.")
+        for _ in range(2):
+            state = puente.send_run(self.repo, "caso", "Corrige.")
+            puente.review_run(self.repo, "caso", state["huella"], "corregir", "Persiste.", failed_correction=True)
+        with self.assertRaisesRegex(puente.BridgeError, "Límite de envíos"):
+            puente.send_run(self.repo, "caso", "No debe consumir otro envío.")
+        self.assertEqual(transport.call_count, 3)
+
+    @patch("puente.run_claude")
+    def test_modelo_sustituido_no_se_da_por_validado(self, transport):
+        self.init()
+        def substituted(*args):
+            result = self.response(*args)
+            result["modelUsage"] = {"claude-sonnet-5": {}}
+            return result
+        transport.side_effect = substituted
+        self.assertEqual(puente.send_run(self.repo, "caso", "Lee.")["estado"], "error")
+
+    def test_esfuerzo_del_hijo_no_depende_del_entorno_ni_lo_modifica(self):
+        code = 'import json, os; print(json.dumps({"effort": os.environ["CLAUDE_CODE_EFFORT_LEVEL"]}))'
+        with patch.dict(os.environ, {"CLAUDE_CODE_EFFORT_LEVEL": "low"}):
+            result = puente.run_claude([sys.executable, "-c", code, "--effort", "xhigh"],
+                                      self.repo, "", 5)
+            self.assertEqual(result["effort"], "xhigh")
+            self.assertEqual(os.environ["CLAUDE_CODE_EFFORT_LEVEL"], "low")
 
 
 if __name__ == "__main__":

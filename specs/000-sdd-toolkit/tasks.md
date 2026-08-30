@@ -25,6 +25,9 @@ El estado de cada producto se consulta en sus documentos; estas tareas no reabre
 
 - [x] T10 — Implementar el puente y su protocolo. RF-14 a RF-17. Hecho cuando: los encargos quedan aislados, se reanuda su sesión explícita, el coordinador controla el veredicto y se respetan rutas y límites sin habilitar herramientas generales de ejecución.
 - [x] T11 — Verificar y documentar el puente. RF-14 a RF-18. Hecho cuando: las pruebas locales cubren fallos y transición de estados; un intercambio real de solo lectura y su continuación funcionan; la guía permite retomar el ciclo y distingue la evidencia simulada de la real.
+- [x] T12 — Fijar y ajustar el perfil del programador. RF-19. Hecho cuando: los envíos y reanudaciones usan Opus 5 extra por defecto, los cambios requieren motivo, dos correcciones fallidas elevan el esfuerzo sin saltar límites y una prueba real confirma el modelo comunicado por Claude Code. No afecta a tareas de los productos.
+
+Evidencia T12, 2026-08-30: 17 pruebas superadas en Windows con Python 3.14.7; invocación real de solo lectura con `claude-opus-5` y `xhigh`, confirmada por los metadatos del CLI. Sin modificar configuración global ni productos. Detalle de RF-19 en [validation.md](validation.md).
 
 Evidencia del puente, 2026-08-30: once pruebas locales superadas con Python 3.14.7 en Windows. Claude Code 2.1.251 recibió dos encargos reales de solo lectura en la misma sesión y conservó el contexto, sin cambios en la copia aislada. Una tercera invocación corrigió solo el archivo permitido de un ejemplo desechable: sus tres casos fallaban antes y pasaron tras la edición, verificados por el coordinador. Ambas tareas de prueba quedaron aprobadas mediante huella y evidencia. No se implementaron tareas de FilePilot. Detalle y límites en [validation.md](validation.md); uso en la [guía del puente](../../tools/puente_agentes/README.md).
 
