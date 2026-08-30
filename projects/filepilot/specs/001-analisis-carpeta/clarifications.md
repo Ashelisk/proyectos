@@ -1,8 +1,23 @@
 # Clarificación — Análisis e informe de una carpeta
 
-**Resultado: lista para planificación.** Revisión documental de [spec.md](spec.md) contrastada con la [constitución](../../docs/constitution.md). Los siete hallazgos están resueltos e incorporados a los requisitos; no queda ninguna decisión abierta. No se ha modificado ni ejecutado código de producto.
+**Resultado: lista salvo las partes indicadas.** Revisión documental de [spec.md](spec.md), versión `f92d62b`, contrastada con la [constitución](../../docs/constitution.md). Quedan por precisar el tratamiento de una raíz oculta (CL-8) y la comunicación de fallos por entrada (CL-5). El resto permite avanzar en planificación; el diseño de esas dos partes depende de sus respuestas. No se ha modificado la spec ni ejecutado código de producto.
 
 El alcance de solo lectura sigue siendo coherente con la constitución. Se conservan las decisiones cerradas de la especificación: analizar e informar sin mover nada, clasificación por extensión, primer nivel con opción recursiva, resumen en consola y exclusiones contabilizadas.
+
+## Hallazgos abiertos
+
+### CL-8 — Carpeta oculta indicada como raíz
+
+- **Prioridad media · abierto · ambigüedad.** RF-1, RF-14, RF-15 y RF-16; spec, líneas 19, 23 y 51–52.
+- **Escenario e impacto:** se ejecuta `filepilot analizar .datos` sin `--incluir-ocultos`, sobre una carpeta legible con archivos visibles. RF-1 indica que se analiza el directorio, pero RF-14 impide recorrer una carpeta oculta sin esa opción. RF-16 exceptúa la raíz de la exclusión de enlaces, sin delimitar la exclusión por ocultación. Una implementación podría analizar los archivos y otra omitir la raíz.
+- **Pregunta:** ¿la raíz indicada explícitamente se analiza aunque sea oculta, también cuando se llega a ella mediante el enlace permitido por RF-16? Si debe excluirse, falta concretar el mensaje, el recuento y el código de salida.
+
+### CL-5 — Comunicación de fallos durante el análisis
+
+- **Prioridad media · parcialmente resuelto · contrato incompleto.** RF-9, RF-10, RF-13 y RNF-3; spec, líneas 50, 56, 58 y 64.
+- **Resuelto:** se usan nombre y tamaño sin abrir el contenido; los fallos ajenos a permisos tienen su propio motivo y el análisis continúa.
+- **Escenario e impacto:** `informe.pdf` desaparece entre la enumeración y la consulta de tamaño. RF-9 y RF-13 exigen contabilizarlo como error de lectura, pero no dicen si debe emitirse un aviso individual. RNF-3 define el contenido de los mensajes de error, sin exigir expresamente uno por entrada fallida. Un contador agregado y un aviso con ruta y causa ofrecen información diferente. El recuento por sí solo no identifica el archivo afectado.
+- **Pregunta:** ¿los fallos por entrada deben producir, además del recuento, un aviso con ruta y causa en la salida de error, o se quiere únicamente el resumen agregado? La spec debe precisar la salida elegida; no cabe afirmar que RF-13 ya exige mostrar la ruta.
 
 ## Hallazgos resueltos
 
@@ -16,7 +31,7 @@ El alcance de solo lectura sigue siendo coherente con la constitución. Se conse
 
 - **Prioridad alta · resuelto.** RF-3, RF-9, RF-14, RF-15 y RF-16.
 - **Escenario e impacto:** con `--recursivo`, una carpeta `.privada` con `foto.jpg` podía recorrerse o no, y no estaba definido si se rechazaba una ruta inicial que fuera un enlace a un directorio.
-- **Decisión:** RF-15 define oculto como el nombre que empieza por punto en cualquier plataforma y, en Windows, también el atributo de sistema. Las carpetas ocultas no se recorren; RF-14 añade `--incluir-ocultos` para examinarlas. RF-16 resuelve la ruta inicial cuando es un enlace a un directorio y limita la exclusión de enlaces a lo encontrado durante el recorrido.
+- **Decisión:** RF-15 define oculto como el nombre que empieza por punto en cualquier plataforma y, en Windows, también el atributo de sistema. Las carpetas ocultas encontradas durante el recorrido no se recorren; RF-14 añade `--incluir-ocultos` para examinarlas. RF-16 resuelve la ruta inicial cuando es un enlace a un directorio y limita la exclusión de enlaces a lo encontrado durante el recorrido. La interacción con una raíz oculta se examina en CL-8.
 
 ## CL-3 — Recuento de elementos omitidos
 
@@ -29,12 +44,6 @@ El alcance de solo lectura sigue siendo coherente con la constitución. Se conse
 - **Prioridad media · resuelto.** RF-7.
 - **Escenario e impacto:** al analizar recursivamente `entrada/sub/foto.jpg`, la fila podía proponer `entrada/imagenes` o una carpeta dentro de `sub`.
 - **Decisión:** RF-7 fija un destino único por grupo, `<ruta analizada>/<categoría>`, siempre en la raíz analizada, también en modo recursivo.
-
-## CL-5 — Lectura y fallos durante el análisis
-
-- **Prioridad media · resuelto.** RF-9, RF-10 y RF-13.
-- **Escenario e impacto:** no estaba definido qué información debía poder leerse, y un archivo que desaparecía durante el recorrido podía atribuirse a una falta de permisos que no era la causa.
-- **Decisión:** RF-10 declara analizable el archivo cuyo nombre y tamaño pueden obtenerse, sin abrir su contenido. RF-9 añade «error de lectura» como cuarto motivo y RF-13 obliga a continuar el análisis conservando la causa real y la ruta afectada.
 
 ## CL-6 — Extensiones más frecuentes
 
@@ -50,8 +59,8 @@ El alcance de solo lectura sigue siendo coherente con la constitución. Se conse
 
 ## Correcciones asociadas
 
-Al incorporar las respuestas se precisaron además dos contratos que dependían de ellas: RF-2 y RF-11 separan el código de salida uno, para el uso incorrecto del comando, del código dos, para cualquier problema con la ruta indicada, cuyo mensaje distingue si no existe, no es un directorio o no puede leerse. RF-12 describe qué muestra el informe cuando no hay archivos analizables.
+RF-2 y RF-11 separan el código de salida uno, para el uso incorrecto del comando, del código dos, para las causas de ruta enumeradas: inexistente, no es un directorio o lectura no permitida. RF-12 fija código cero y describe el informe cuando no hay archivos analizables.
 
 ## Cierre de la revisión
 
-Todos los hallazgos están cerrados y los requisitos afectados vuelven a ser coherentes entre sí y con la constitución. Esta revisión es documental: no valida la implementación ni la compatibilidad con las plataformas de RNF-2, y no añade requisitos de movimiento, duplicados, configuración o recuperación fuera del alcance de la especificación.
+CL-1, CL-2, CL-3, CL-4, CL-6 y CL-7 están resueltos en los requisitos. CL-5 conserva pendiente la comunicación de fallos y CL-8 requiere delimitar la raíz oculta. No es necesario reabrir las demás decisiones ni ampliar el alcance. Esta revisión no valida la implementación ni la compatibilidad con las plataformas de RNF-2.
