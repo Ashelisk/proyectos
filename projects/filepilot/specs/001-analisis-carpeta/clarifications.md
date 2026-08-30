@@ -1,6 +1,6 @@
 # Clarificación — Análisis e informe de una carpeta
 
-**Resultado: lista para tareas.** Revisión documental de [spec.md](spec.md) y [plan.md](plan.md) contrastada con la [constitución](../../docs/constitution.md). Los diecisiete hallazgos están resueltos: la spec alinea RF-12 con RF-13 y precisa RF-15; el plan completa el contrato de omisiones, la versión mínima, la detección de ocultos, las verificaciones de lectura y fallos y la justificación de las APIs de recorrido. No se ha implementado ni ejecutado código de producto.
+**Resultado: lista para planificación.** El plan técnico también está revisado y listo para tareas. Se han contrastado [spec.md](spec.md), [plan.md](plan.md) y la [constitución](../../docs/constitution.md): los diecisiete hallazgos están resueltos y no quedan bloqueos dentro del alcance revisado. La comprobación abarca requisitos, contratos y verificaciones previstas; no se ha implementado ni ejecutado código de producto.
 
 El alcance de solo lectura sigue siendo coherente con la constitución. Se conservan las decisiones cerradas de la especificación: analizar e informar sin mover nada, clasificación por extensión, primer nivel con opción recursiva, resumen en consola y exclusiones contabilizadas.
 
@@ -16,32 +16,31 @@ El alcance de solo lectura sigue siendo coherente con la constitución. Se conse
 
 - **Prioridad media · resuelto · contrato técnico incompleto.** Plan: datos y contratos; RF-13 y RNF-3.
 - **Escenario e impacto:** una desaparición y un fallo de entrada/salida se reducían a un mismo motivo `error_lectura`, suficiente para contar pero no para redactar el aviso con su causa concreta.
-- **Decisión:** `EntradaOmitida` incorpora `detalle`, que conserva la causa comunicada por el sistema y acompaña al aviso, mientras `motivo` sirve solo al recuento. El recorrido no escribe en ninguna salida y `cli.py` asume la emisión de los avisos, de modo que recuento y texto proceden del mismo dato.
+- **Decisión:** `EntradaOmitida.detalle` expresa en español la causa real a partir del tipo y código del fallo, sin copiar el idioma del sistema; `motivo` determina el recuento y el código de salida. El recorrido devuelve estos datos y `cli.py` emite los avisos. La verificación incluye errores cuyo texto original esté en otro idioma.
 
 ### CL-14 — Versión mínima sin justificación de mantenimiento
 
 - **Prioridad media · resuelto · riesgo técnico.** Plan: enfoque y pruebas; constitución, principios 2 y 7.
 - **Escenario e impacto:** admitir Python 3.9 obligaba a mantener una combinación sin soporte desde octubre de 2025, incompatible además con las versiones actuales de pytest, que exigen 3.10 o superior.
-- **Decisión:** la versión mínima pasa a Python 3.11, mantenida hasta octubre de 2027 y presente en distribuciones vigentes. Se descartan 3.9 por falta de soporte y 3.10 por caducar en octubre de 2026. Las pruebas se ejecutan con la versión mínima y con la última estable de cada plataforma.
+- **Decisión:** Python 3.11 es la versión mínima, con soporte de seguridad previsto hasta octubre de 2027. El plan prevé pruebas con la versión mínima y la última estable de cada plataforma, registrando las versiones realmente verificadas.
 
 ### CL-15 — Degradación silenciosa de la detección de ocultos
 
 - **Prioridad media · resuelto · conflicto entre plan y spec.** RF-9, RF-13 y RF-15.
 - **Escenario e impacto:** ante un atributo no consultable, el plan permitía clasificar como visible un archivo oculto de Windows sin punto inicial, contra lo exigido por RF-15.
-- **Decisión:** RF-15 establece que en Windows un elemento cuyo atributo no pueda consultarse no se da por visible: se contabiliza como omitido por error de lectura, con su aviso y el código tres correspondiente. Fuera de Windows el atributo no es aplicable y su ausencia no afecta al análisis.
+- **Decisión:** RF-15 impide dar por visible un elemento cuyo atributo no pueda consultarse en Windows y conserva la prioridad de RF-9: falta de permisos cuando esa sea la causa y error de lectura para los demás fallos, con aviso y código tres. Fuera de Windows el atributo no es aplicable. La misma regla figura en el plan y en sus verificaciones.
 
 ### CL-16 — Verificación insuficiente de lectura y fallos
 
 - **Prioridad media · resuelto · cobertura incompleta.** Plan: verificación; RF-10 y RF-13.
 - **Escenario e impacto:** la instantánea de rutas, tamaños y fechas aprobaría una implementación que abriera el contenido de los archivos, y no había forma repetible de provocar una desaparición o un error de entrada/salida.
-- **Decisión:** se añade una prueba que registra las aperturas de archivo del intérprete durante el análisis y exige que ninguna corresponda al árbol examinado, junto con fallos inyectados en la consulta de metadatos que comprueban continuación, aviso con ruta y causa, recuento único y código tres, incluido el caso sin archivos analizables. Esas pruebas complementan las de permisos reales, que siguen marcándose como omitidas cuando el entorno no permite prepararlas.
+- **Decisión:** el plan compara el árbol antes y después del análisis y registra las aperturas de contenido en una prueba aislada. Los fallos inyectados verifican continuación, diagnóstico en español, recuento único y código tres, incluido el caso sin archivos analizables. Estas pruebas complementan las de permisos reales, que se marcarán como omitidas si el entorno no permite prepararlas.
 
 ### CL-17 — Justificación imprecisa de las APIs de recorrido
 
 - **Prioridad baja · resuelto · precisión técnica.** Plan: enfoque, decisiones y verificación.
 - **Escenario e impacto:** el plan presentaba los metadatos de `scandir` como una consulta única en todas las plataformas, atribuía a `os.walk` una limitación absoluta de diagnóstico y daba por necesaria la elevación de privilegios en Windows para crear enlaces.
 - **Decisión:** se mantiene `scandir` por el control entrada a entrada, precisando que en Unix `DirEntry.stat()` consulta el sistema la primera vez y guarda el resultado, que `os.walk` admite `onerror` y permite consultar cada archivo pero agrupa los directorios en listas, y que en Windows la creación de enlaces también funciona con el modo de desarrollador: la prueba se intenta y solo se omite si la creación falla.
-
 
 ### CL-8 — Carpeta oculta indicada como raíz
 
@@ -71,13 +70,13 @@ El alcance de solo lectura sigue siendo coherente con la constitución. Se conse
 
 - **Prioridad media · resuelto.** RF-4 y RF-9.
 - **Escenario e impacto:** un enlace simbólico llamado `.enlace` cumplía dos motivos y podía contarse dos veces; una carpeta inaccesible no permitía conocer sus descendientes.
-- **Decisión:** RF-9 asigna un único motivo por entrada con la prioridad oculto → enlace → sin permiso → error de lectura, de forma que los motivos suman el total de omitidos. RF-4 fija que una subcarpeta no recorrida cuenta entre las encontradas y como una única entrada omitida, sin estimar su contenido.
+- **Decisión:** RF-9 asigna un único motivo por entrada con la prioridad oculto → enlace → sin permiso → error de lectura, de forma que los motivos suman el total. En modo recursivo, RF-4 cuenta una subcarpeta excluida como encontrada y como una entrada omitida, sin estimar su contenido; en modo no recursivo solo cuenta como encontrada.
 
 ### CL-4 — Significado del destino propuesto
 
 - **Prioridad media · resuelto.** RF-7.
 - **Escenario e impacto:** al analizar recursivamente `entrada/sub/foto.jpg`, la fila podía proponer `entrada/imagenes` o una carpeta dentro de `sub`.
-- **Decisión:** RF-7 fija un destino único por grupo, `<ruta analizada>/<categoría>`, siempre en la raíz analizada, también en modo recursivo.
+- **Decisión:** RF-7 fija un destino único por grupo, `<ruta analizada>/<carpeta>`, siempre en la raíz analizada, también en modo recursivo. Los nombres literales se recogen en RF-7 y CL-10.
 
 ### CL-6 — Extensiones más frecuentes
 

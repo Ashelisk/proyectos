@@ -12,7 +12,7 @@ filepilot/__init__.py, __main__.py, cli.py, recorrido.py, clasificacion.py, info
 tests/
 ```
 
-Se fija Python 3.11 o superior. Es la versión mantenida más antigua con soporte previsto hasta octubre de 2027, viene de serie en distribuciones vigentes como Debian 12 y se instala sin dificultad en macOS y Windows. Se descarta 3.9 porque su soporte terminó en octubre de 2025 y las versiones actuales de pytest ya exigen 3.10 o superior; se descarta 3.10 porque solo recibe correcciones de seguridad y caduca en octubre de 2026. Ninguna necesidad de compatibilidad heredada justifica mantener una combinación sin soporte. Las pruebas se ejecutan con la misma versión mínima y con la última estable disponible en cada plataforma.
+Python 3.11 o superior permite una base compatible con pytest y con soporte de seguridad previsto hasta octubre de 2027 para la versión mínima ([ciclo de soporte](https://devguide.python.org/versions/)). Las pruebas se ejecutarán con la versión mínima y con la última estable disponible en cada plataforma; la validación identificará las versiones realmente utilizadas.
 
 ## Componentes
 
@@ -28,7 +28,7 @@ Se fija Python 3.11 o superior. Es la versión mantenida más antigua con soport
 Estructuras internas, todas de solo lectura una vez creadas:
 
 - `ArchivoAnalizado(ruta, categoria, tamano)` — un archivo clasificado.
-- `EntradaOmitida(ruta, motivo, detalle)` — `motivo` es uno de `oculto`, `enlace`, `sin_permiso`, `error_lectura`, asignado una sola vez con esa prioridad y usado solo para los recuentos (RF-9). `detalle` conserva la causa concreta tal como la comunicó el sistema —fichero inexistente, permiso denegado, error de entrada/salida— y es el texto que acompaña al aviso; está vacío cuando la omisión es voluntaria, es decir, por ocultación o por enlace.
+- `EntradaOmitida(ruta, motivo, detalle)` — `motivo` es uno de `oculto`, `enlace`, `sin_permiso`, `error_lectura`, asignado una sola vez con esa prioridad y usado para los recuentos y el código de salida (RF-9, RF-13). `detalle` expresa en español la causa real a partir del tipo y código del fallo, sin copiar mensajes dependientes del idioma del sistema ni inventar una causa desconocida. Está vacío para las omisiones por ocultación o enlace.
 - `ResultadoRecorrido(archivos, omitidas, subcarpetas_encontradas, subcarpetas_recorridas)`.
 
 Contrato de línea de órdenes:
@@ -54,7 +54,7 @@ Formato del informe: una fila por grupo con categoría, recuento, tamaño en bas
 
 **Códigos de salida propios frente a los de `argparse`.** `argparse` termina con código 2 ante un uso incorrecto, valor que la spec reserva a los problemas de ruta. Se sobrescribe el método de error del analizador para terminar con código 1 (RF-2) y así mantener el contrato de la tabla anterior.
 
-**Detección de oculto por plataforma.** Nombre que empieza por punto en cualquier sistema y, en Windows, además el bit `FILE_ATTRIBUTE_HIDDEN` de `st_file_attributes`, campo que Python documenta en esa plataforma. La tolerancia se limita a los sistemas donde el atributo no es aplicable: en Windows, si la consulta falla para un elemento, este no se da por visible, sino que se contabiliza como omitido por error de lectura y genera su aviso (RF-15, RF-9, RF-13). Un dato que no se ha podido comprobar nunca se interpreta como ausencia de ocultación.
+**Detección de oculto por plataforma.** Nombre que empieza por punto en cualquier sistema y, en Windows, además el bit `FILE_ATTRIBUTE_HIDDEN` de `st_file_attributes`. Su ausencia solo se tolera fuera de Windows. Si la consulta falla en Windows, se respeta la prioridad de RF-9: `sin_permiso` cuando esa sea la causa y `error_lectura` para los demás fallos, con su aviso (RF-15, RF-13). Un atributo no comprobado no se interpreta como ausencia de ocultación; las exclusiones se aplican dentro del alcance de RF-4 y RF-14.
 
 **Formato de tamaño sin `locale`.** El separador decimal se escribe directamente como coma, en lugar de depender de la configuración regional del sistema, para que la misma carpeta produzca el mismo informe en las tres plataformas y las pruebas sean deterministas (RF-7, RNF-2).
 
@@ -66,11 +66,11 @@ Formato del informe: una fila por grupo con categoría, recuento, tamaño en bas
 
 Sin acceso a disco, sobre datos construidos en memoria: mapa de extensiones y última extensión con mayúsculas (RF-5), grupo sin extensión (RF-6), formato de tamaños y filas del informe (RF-7), límite y empates de extensiones desconocidas (RF-8), prioridad de motivos y coincidencia entre la suma por motivos y el total (RF-9), y mensaje de carpeta sin archivos analizables (RF-12).
 
-Con sistema de archivos real, en carpetas temporales creadas por la propia prueba y eliminadas al terminar: primer nivel y modo recursivo (RF-3), recuento de subcarpetas en ambos modos (RF-4), ocultos y `--incluir-ocultos` (RF-14, RF-15), raíz oculta y raíz enlazada (RF-16), rutas inexistentes y no directorios (RF-11), y los cuatro códigos de salida (RF-1, RF-2, RF-11, RF-12, RF-13).
+Con sistema de archivos real, en carpetas temporales creadas por la propia prueba y eliminadas al terminar: primer nivel y modo recursivo (RF-3), recuento de subcarpetas en ambos modos (RF-4), ocultos y `--incluir-ocultos` (RF-14, RF-15), raíz oculta y raíz enlazada (RF-16), rutas relativas y absolutas y nombres no ASCII (RNF-2), rutas inexistentes y no directorios (RF-11), y los cuatro códigos de salida (RF-1, RF-2, RF-11, RF-12, RF-13).
 
-Comprobación específica de RF-10, en dos partes porque la primera no basta. Una instantánea del árbol —rutas, tamaños y fechas de modificación— antes y después de cada análisis demuestra que nada se ha creado, movido ni borrado, pero no que no se haya leído el contenido: abrir un archivo para leerlo deja esa instantánea intacta. Se añade por eso una prueba que registra las aperturas de archivo durante el análisis mediante un enganche de auditoría del intérprete y exige que ninguna corresponda a una ruta del árbol examinado.
+RF-10 se comprobará comparando el árbol —rutas, tamaños y fechas de modificación— antes y después del análisis y registrando las aperturas de contenido mediante el [evento de auditoría `open`](https://docs.python.org/3.11/library/audit_events.html). La prueba se ejecutará en un proceso aislado y exigirá que el análisis no abra el contenido de ningún archivo del árbol. El registro se limitará al análisis, excluyendo la preparación y limpieza de los datos de prueba.
 
-Fallos controlados para RF-13, provocados en la propia prueba en lugar de esperar a que ocurran: se sustituye temporalmente la consulta de metadatos para que una ruta concreta lance un error de fichero inexistente —la desaparición entre la enumeración y la consulta del tamaño— y otra un error de entrada/salida. Cada caso comprueba que el análisis continúa con el resto, que la entrada aparece una sola vez con su motivo, que el aviso de la salida de error contiene su ruta y su causa concreta y que el código de salida es tres, incluida la variante en la que ningún archivo llega a clasificarse (RF-12).
+Fallos controlados para RF-13: se sustituye temporalmente la consulta de metadatos para provocar errores de archivo inexistente, permisos y entrada/salida. Se comprobarán continuación, motivo único, aviso con ruta y causa en español y código tres, incluso sin archivos clasificados (RF-12). Se incluirán un error cuyo texto original esté en otro idioma (RNF-3) y fallos de consulta del atributo oculto de Windows (RF-15).
 
 Los datos de prueba se generan siempre dentro de la carpeta temporal de la prueba; ninguna prueba usa rutas del usuario, del repositorio ni del sistema, y ninguna crea archivos fuera de ese árbol.
 
@@ -78,9 +78,9 @@ Verificaciones que dependen del entorno y se marcan como omitidas cuando no pued
 
 ## Riesgos
 
-- El motivo `sin_permiso` puede quedar sin cobertura automática en algunos entornos; se compensa con una comprobación manual documentada en la validación.
+- La comprobación de permisos reales puede quedar sin cobertura automática en algunos entornos; se complementará con una comprobación manual documentada en la validación, sin confundirla con los fallos simulados.
 - Una carpeta muy poblada puede producir un informe lento; la spec no fija requisitos de rendimiento y no se optimiza sin una necesidad demostrada.
-- Si en Windows la consulta del atributo oculto falla para muchos elementos, el análisis los omitirá por error de lectura y el informe perderá cobertura, aunque nunca dará por visible lo que no ha podido comprobar. El aviso por elemento y el código tres hacen visible esa situación.
+- Si en Windows falla la consulta del atributo oculto, el informe perderá cobertura sobre esas entradas. Las omisiones conservarán el motivo real según RF-9; los avisos y el código tres señalarán esos fallos.
 
 ## Orden de implementación
 

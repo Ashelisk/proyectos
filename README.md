@@ -2,7 +2,7 @@
 
 Repositorio para proyectos CLI, web y móviles con Spec-Driven Development (SDD). Incluye un paquete reutilizable de nueve skills: una coordinadora y ocho fases.
 
-**Estado de FilePilot:** [constitución definida](projects/filepilot/docs/constitution.md). CLI local en Python para Linux, macOS y Windows, sin cuentas ni servicios externos; sin sobrescritura de archivos ni eliminación automática de duplicados. Carpeta: `projects/filepilot/`. Primera especificación: [001 — análisis e informe de una carpeta](projects/filepilot/specs/001-analisis-carpeta/spec.md), con clarificación cerrada y lista para planificación. Aún no hay código ni compatibilidad verificada.
+**Estado de FilePilot:** [constitución definida](projects/filepilot/docs/constitution.md). CLI local en Python para Linux, macOS y Windows, sin cuentas ni servicios externos; sin sobrescritura de archivos ni eliminación automática de duplicados. Carpeta: `projects/filepilot/`. La [spec 001 — análisis e informe de una carpeta](projects/filepilot/specs/001-analisis-carpeta/spec.md) y su [plan técnico](projects/filepilot/specs/001-analisis-carpeta/plan.md) están revisados, con clarificación cerrada y listos para descomponer en tareas. Aún no hay código ni compatibilidad verificada.
 
 ## Uso y adaptación
 
