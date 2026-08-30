@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "filepilot"
+version = "0.1.0"
+description = "Analiza una carpeta y propone su organización sin modificar nada"
+requires-python = ">=3.11"
+# La aplicación funciona solo con la biblioteca estándar (RNF-1).
+dependencies = []
+
+[project.scripts]
+filepilot = "filepilot.cli:main"
+
+[project.optional-dependencies]
+# Herramientas de desarrollo, ajenas a la aplicación instalada.
+dev = ["pytest>=8"]
+
+[tool.setuptools]
+packages = ["filepilot"]
