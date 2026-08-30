@@ -26,13 +26,18 @@ def test_modulo_muestra_ayuda(tmp_path):
 
 
 def rutas_de_la_orden():
-    """Rutas donde el intérprete en uso instala sus ejecutables, sin mirar el PATH."""
+    """Rutas donde el intérprete en uso instala sus ejecutables, sin mirar el PATH.
+
+    En un entorno aislado solo vale el ejecutable de ese entorno: aceptar otro
+    ocultaría una instalación incompleta. Fuera de él se admite además el
+    esquema de usuario, donde `pip install --user` deja la orden.
+    """
     nombre = "filepilot.exe" if sys.platform == "win32" else "filepilot"
+    del_interprete = Path(sysconfig.get_path("scripts")) / nombre
+    if sys.prefix != sys.base_prefix:
+        return [del_interprete]
     esquema_de_usuario = sysconfig.get_preferred_scheme("user")
-    return [
-        Path(sysconfig.get_path("scripts")) / nombre,
-        Path(sysconfig.get_path("scripts", esquema_de_usuario)) / nombre,
-    ]
+    return [del_interprete, Path(sysconfig.get_path("scripts", esquema_de_usuario)) / nombre]
 
 
 def test_orden_instalada_muestra_ayuda(tmp_path):

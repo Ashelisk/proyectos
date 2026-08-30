@@ -1,6 +1,6 @@
 # Validación — T1: estructura e instalación
 
-**Veredicto: no cumple la revisión del cambio `d7248bc`.** El arranque actual funciona, pero la prueba puede aprobar una instalación cuyo ejecutable falta en el entorno evaluado. V-1 queda reabierta y V-4 no puede considerarse resuelta. No se han modificado código, pruebas ni casillas de tareas durante esta revisión.
+**Veredicto: cumple T1 en el entorno verificado.** El hallazgo V-1 / V-4 detectado sobre `d7248bc` está corregido: en un entorno aislado la prueba exige el ejecutable de ese entorno y rechaza cualquier otro. La aplicación no ha cambiado.
 
 ## Alcance y entorno
 
@@ -33,17 +33,26 @@ El ejecutable ajeno se generó únicamente dentro de `.sdd-check/t1-claude-revie
 | Requisito o criterio | Evidencia | Resultado | Limitación |
 | --- | --- | --- | --- |
 | T1: ayuda por comando y módulo | Suite actual: ambos arranques superados | Cumple | Windows / Python 3.14.7; instalación existente |
-| T1: comprobar el ejecutable del entorno aislado | Acepta un ejecutable ajeno cuando falta el propio | Falla | Escenario controlado con rutas sustituidas |
+| T1: comprobar el ejecutable del entorno aislado | Con el ejecutable propio ausente y uno ajeno en la ruta de usuario, la prueba falla | Cumple | Escenario controlado con rutas sustituidas |
 | RNF-1: dependencias de ejecución | Prueba de metadatos superada | Cumple, parcial | Funcionamiento completo sin red pendiente de T13 |
 | Constitución: simplificación de argumentos | `cli.py` conserva `parse_args(argv)`, sin import de `sys` | Cumple | Inspección; aplicación sin cambios |
 | RNF-2 y versión mínima del plan | Python 3.11, Linux y macOS no ejecutados | No verificado | Pendiente de T12 |
 
-## Hallazgo pendiente — V-1 / V-4
+## Hallazgo corregido — V-1 / V-4
 
-**Prioridad media.** [test_arranque.py](../../tests/test_arranque.py), líneas 27–42, añade siempre el esquema de usuario y acepta el primer ejecutable existente. Evitar el PATH global no basta: esa segunda ruta tampoco pertenece necesariamente al entorno bajo prueba.
+**Prioridad media · resuelto.** La versión anterior de [test_arranque.py](../../tests/test_arranque.py) añadía siempre el esquema de usuario y aceptaba el primer ejecutable existente. Evitar el PATH global no bastaba: esa segunda ruta tampoco pertenece al entorno bajo prueba, y pip no admite instalaciones `--user` dentro de un entorno virtual con el aislamiento predeterminado ([documentación de pip](https://pip.pypa.io/en/stable/user_guide/#user-installs)).
 
-La instalación con `--user` existe y merece distinguirse de una instalación en un entorno virtual. Sin embargo, T1 exige verificar una instalación aislada. En el entorno ejecutado, `sys.prefix != sys.base_prefix` y `site.ENABLE_USER_SITE` es `False`; la ruta del esquema de usuario apunta fuera de `.venv`. Pip tampoco admite instalaciones `--user` en un entorno virtual con el aislamiento predeterminado ([documentación de pip](https://pip.pypa.io/en/stable/user_guide/#user-installs)).
+**Corrección:** la prueba distingue ahora ambas situaciones mediante `sys.prefix != sys.base_prefix`. Dentro de un entorno aislado exige el ejecutable de ese entorno y no consulta ninguna otra ruta; fuera de él admite además el esquema de usuario, donde `pip install --user` deja la orden. En ningún caso se consulta el PATH ni se omite la prueba.
 
-**Corrección recomendada:** para T1, exigir el ejecutable del entorno aislado, sin recurrir al esquema de usuario. Si se amplía la comprobación a instalaciones `--user`, identificar explícitamente la distribución que se está evaluando y verificar esa modalidad por separado; no aceptarla como sustituto de un ejecutable ausente. El caso «falta el propio y existe uno ajeno» debe producir fallo.
+Escenarios ejecutados tras la corrección, sustituyendo `sysconfig.get_path` en procesos separados:
 
-V-2 y V-3 conservan sus correcciones. La evidencia previa sobre arranque no queda invalidada, pero el cierre de V-1 a V-4 era demasiado amplio: comprobar solo que faltan ambos ejecutables no demuestra aislamiento. No es necesario cambiar la spec ni el plan; T2 permanece sin iniciar.
+| Escenario controlado | Resultado observado | Evaluación |
+| --- | --- | --- |
+| Suite completa en el entorno real | 3 pruebas superadas, ninguna omitida | Correcto |
+| Ambas rutas de ejecutables inexistentes | 1 fallo, código 1 | Correcto |
+| En entorno aislado: propio ausente y copia real del lanzador en la ruta de usuario | 1 fallo, código 1 | Falso positivo cerrado |
+| Fuera de un entorno aislado: solo el ejecutable del esquema de usuario | 1 prueba superada, código 0 | Correcto; `--user` sigue siendo válido donde procede |
+
+La copia del lanzador se creó únicamente en un directorio temporal del sistema, fuera del repositorio y del directorio de usuario real; no se alteró ningún ejecutable instalado.
+
+V-2 y V-3 conservan sus correcciones. No es necesario cambiar la spec ni el plan. Siguiente tarea: **T2**, todavía sin iniciar.
