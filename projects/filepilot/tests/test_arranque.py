@@ -12,9 +12,9 @@ def ejecutar(orden, directorio):
         orden,
         cwd=directorio,
         capture_output=True,
+        # Sin codificación explícita: se usa la del entorno, la misma que emplea
+        # el proceso hijo al escribir sus mensajes.
         text=True,
-        encoding="utf-8",
-        errors="replace",
     )
 
 

@@ -46,7 +46,9 @@ Límite: las correcciones se verificaron con la instalación editable existente,
 
 **T2, 2026-08-30.** `python -m pytest -q` desde `projects/filepilot/`: 10 pruebas superadas, ninguna omitida, en Windows con Python 3.14.7. Las siete nuevas comprueban que `filepilot` sin subcomando, `analizar` sin ruta, una opción desconocida y un subcomando inexistente escriben el uso en la salida de error y terminan con código uno, que `--help` y `analizar --help` terminan en cero, y que la ruta es obligatoria mientras `--recursivo` e `--incluir-ocultos` quedan declaradas y desactivadas por omisión. Antes de implementar, las siete fallaban por la ausencia del subcomando y por el código dos de `argparse`. Comprobado además con la orden instalada desde una carpeta ajena al proyecto: ningún caso de error devuelve el código dos.
 
-Límite: `analizar <ruta>` acepta los argumentos y termina en cero sin producir informe todavía; la validación de la ruta llega en T3 y el análisis en T5 a T8.
+Los diagnósticos de `argparse` se traducen al español conforme a RNF-3, incluida la línea de uso: «faltan argumentos obligatorios: ruta», «argumentos no reconocidos: --inexistente», «valor no admitido para orden», «la opción --recursivo no admite un valor». Dos pruebas por caso comprueban la causa esperada y la ausencia de los fragmentos originales en inglés; un mensaje sin traducción conocida cae en un texto genérico en español, sin filtrar el original. Total tras la traducción: 17 pruebas superadas.
+
+Límites: `analizar <ruta>` acepta los argumentos y termina en cero sin producir informe todavía; la validación de la ruta llega en T3 y el análisis en T5 a T8. La ayuda de `--help` conserva los encabezados de sección de `argparse` en inglés; RNF-3 solo alcanza a los mensajes de error. Las pruebas leen la salida con la codificación del entorno, la misma que usa el proceso: queda pendiente para T8 y T12 comprobar qué ocurre cuando esa codificación no puede representar un carácter del informe o de un nombre de archivo.
 
 ## Cobertura y estado
 
