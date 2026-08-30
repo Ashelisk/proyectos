@@ -6,7 +6,7 @@ Derivadas de [plan.md](plan.md) y trazadas a los requisitos de [spec.md](spec.md
 
 - [x] **T1 — Estructura del paquete y ejecución.** Crear `pyproject.toml` con Python 3.11 como versión mínima, el punto de entrada `filepilot`, el sistema de construcción separado de las dependencias de ejecución y `pytest` como herramienta de pruebas. Preparar el paquete y una entrada común en `cli.py`, sin implementar todavía el análisis ni el subcomando de T2. Requisitos: RNF-1 (dependencias; funcionamiento sin red en T13). Dependencias: ninguna. Archivos: `pyproject.toml`, `filepilot/__init__.py`, `filepilot/__main__.py`, `filepilot/cli.py`, `tests/test_arranque.py`. Hecho cuando: tras instalar en un entorno aislado, `filepilot --help` y `python -m filepilot --help` muestran la ayuda y terminan en cero desde una carpeta temporal ajena al proyecto; la prueba de arranque se recoge y pasa con pytest, y la aplicación no declara dependencias de ejecución.
 
-- [ ] **T2 — Subcomando y uso incorrecto.** Definir en `cli.py` el subcomando `analizar` con la ruta obligatoria y las opciones `--recursivo` e `--incluir-ocultos`, y sobrescribir el error del analizador para terminar con código uno. Requisitos: RF-2, RF-3 (declaración de opciones). Dependencias: T1. Archivos: `filepilot/cli.py`, `tests/test_cli.py`. Hecho cuando: sin ruta y con una opción desconocida se escribe el uso en la salida de error y el código es uno; `--help` termina en cero; ningún caso de error usa el código dos de `argparse`.
+- [x] **T2 — Subcomando y uso incorrecto.** Definir en `cli.py` el subcomando `analizar` con la ruta obligatoria y las opciones `--recursivo` e `--incluir-ocultos`, y sobrescribir el error del analizador para terminar con código uno. Requisitos: RF-2, RF-3 (declaración de opciones). Dependencias: T1. Archivos: `filepilot/cli.py`, `tests/test_cli.py`. Hecho cuando: sin ruta y con una opción desconocida se escribe el uso en la salida de error y el código es uno; `--help` termina en cero; ningún caso de error usa el código dos de `argparse`.
 
 - [ ] **T3 — Resolución y validación de la raíz.** Resolver la ruta indicada siguiendo enlaces y comprobar que es un directorio legible antes de analizar. Requisitos: RF-11, RF-16, RF-14 (raíz oculta). Dependencias: T2. Archivos: `filepilot/cli.py`, `tests/test_raiz.py`. Hecho cuando: ruta inexistente, ruta que es un archivo y directorio ilegible terminan en código dos con mensajes que distinguen la causa y citan la ruta; la validación acepta una raíz oculta y devuelve el directorio resuelto de una raíz enlazada sin exigir `--incluir-ocultos`. Esta tarea no exige el recorrido ni el informe, que se integran después. Las pruebas de enlaces y permisos reales se omiten con el motivo documentado solo si el entorno impide preparar el caso.
 
@@ -44,11 +44,15 @@ Derivadas de [plan.md](plan.md) y trazadas a los requisitos de [spec.md](spec.md
 
 Límite: las correcciones se verificaron con la instalación editable existente, sin reconstruir el entorno. Python 3.11, Linux y macOS quedan pendientes de T12; no se afirma compatibilidad no ejecutada.
 
+**T2, 2026-08-30.** `python -m pytest -q` desde `projects/filepilot/`: 10 pruebas superadas, ninguna omitida, en Windows con Python 3.14.7. Las siete nuevas comprueban que `filepilot` sin subcomando, `analizar` sin ruta, una opción desconocida y un subcomando inexistente escriben el uso en la salida de error y terminan con código uno, que `--help` y `analizar --help` terminan en cero, y que la ruta es obligatoria mientras `--recursivo` e `--incluir-ocultos` quedan declaradas y desactivadas por omisión. Antes de implementar, las siete fallaban por la ausencia del subcomando y por el código dos de `argparse`. Comprobado además con la orden instalada desde una carpeta ajena al proyecto: ningún caso de error devuelve el código dos.
+
+Límite: `analizar <ruta>` acepta los argumentos y termina en cero sin producir informe todavía; la validación de la ruta llega en T3 y el análisis en T5 a T8.
+
 ## Cobertura y estado
 
 RF-1 (T8, T13), RF-2 (T2), RF-3 (T5), RF-4 (T5, T6), RF-5 (T4), RF-6 (T4), RF-7 (T4, T8), RF-8 (T8), RF-9 (T6), RF-10 (T11, T13), RF-11 (T3), RF-12 (T9, T10), RF-13 (T10), RF-14 (T3, T6, T13), RF-15 (T6, T7), RF-16 (T3, T13), RNF-1 (T1, T13), RNF-2 (T12), RNF-3 (T10).
 
-T1 completada, con sus observaciones corregidas y verificadas. Siguiente tarea: T2, sin bloqueos y todavía sin iniciar. T4 también tiene su dependencia satisfecha y es independiente de T2 y T3; la ejecución seguirá las reglas de coordinación del repositorio. T2 a T14 permanecen pendientes; no hay decisiones de producto abiertas ni análisis de carpetas implementado.
+T1 y T2 completadas y verificadas. Siguiente tarea: T3, sin bloqueos y todavía sin iniciar. T4 también tiene su dependencia satisfecha y es independiente de T3. T3 a T14 permanecen pendientes; no hay decisiones de producto abiertas ni análisis de carpetas implementado.
 
 Quedan fuera de estas tareas los comportamientos excluidos por la spec: mover u organizar archivos, conflictos de nombre, duplicados, reglas configurables, salida en JSON y deshacer.
 
