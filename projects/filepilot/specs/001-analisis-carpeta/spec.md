@@ -49,13 +49,13 @@ Persona que administra sus propios archivos desde la terminal, en Linux, macOS o
 
 - RF-9: No se clasificarán los archivos ocultos, los enlaces simbólicos, los elementos cuya lectura no esté permitida ni aquellos cuya lectura falle por otra causa. El informe indicará cuántas entradas se omitieron, desglosado por esos cuatro motivos. Cada entrada omitida se contabilizará una sola vez, aplicando la prioridad oculto → enlace simbólico → sin permiso → error de lectura, de modo que la suma por motivos coincida con el total de omitidos. Ninguna entrada se omitirá sin aparecer en ese recuento.
 - RF-15: Se considerará oculto todo elemento cuyo nombre empiece por punto en cualquier plataforma y, además en Windows, todo elemento con el atributo de sistema «oculto».
-- RF-14: Con la opción `--incluir-ocultos`, los archivos y las carpetas ocultos se examinarán como cualquier otro elemento y dejarán de contarse como omitidos. Sin esa opción, una carpeta oculta no se recorre y su contenido no se enumera.
+- RF-14: La carpeta raíz indicada se analizará aunque sea oculta, también si se accede a ella mediante el enlace de RF-16. Las exclusiones se aplican a su contenido: sin `--incluir-ocultos`, no se recorren las subcarpetas ocultas ni se enumera su contenido. Con esa opción, los archivos y las carpetas ocultos encontrados se examinan como cualquier otro elemento y no se omiten por ocultación; las demás exclusiones de RF-9 siguen vigentes.
 
 ### Seguridad y fallos
 
 - RF-10: El análisis será de solo lectura: la herramienta no creará, moverá, renombrará ni eliminará ningún archivo ni directorio, incluidas las carpetas de destino que propone, y no abrirá el contenido de los archivos. Un archivo se considera analizable cuando pueden obtenerse su nombre y su tamaño.
 - RF-11: Si la ruta indicada no existe, no es un directorio o su lectura no está permitida, la herramienta describirá el problema y la ruta afectada en la salida de error y terminará con código dos, sin emitir informe. El mensaje distinguirá cuál de las tres causas se ha producido.
-- RF-13: Cuando un elemento falle durante el recorrido —por ejemplo, si desaparece entre su enumeración y la consulta de su tamaño, o si su lectura da error—, el análisis continuará con los demás y esa entrada se contabilizará entre los omitidos con su motivo real conforme a RF-9, sin atribuirla a una falta de permisos.
+- RF-13: Cuando un elemento falle durante el recorrido —por ejemplo, si desaparece entre su enumeración y la consulta de su tamaño, o si su lectura da error—, el análisis continuará con los demás y esa entrada se contabilizará entre los omitidos con su motivo real conforme a RF-9. Cada fallo generará además un aviso en la salida de error con la ruta afectada y la causa, en español, conforme a RNF-3; el resumen conservará el recuento correspondiente.
 
 ## Requisitos no funcionales
 
@@ -68,6 +68,7 @@ Persona que administra sus propios archivos desde la terminal, en Linux, macOS o
 - Directorio vacío: RF-12. Directorio con solo subcarpetas: sin `--recursivo`, RF-12; con `--recursivo`, se clasifican los archivos que contengan sus subcarpetas según RF-3.
 - Directorio en el que todos los elementos quedan excluidos: RF-12 junto con los recuentos de RF-9.
 - Elementos ocultos, enlaces simbólicos, permisos denegados y fallos de lectura durante el recorrido: RF-9, RF-13, RF-14 y RF-15.
+- Raíz oculta, indicada directamente o mediante un enlace: RF-14 y RF-16; se analiza sin exigir `--incluir-ocultos`, manteniendo las exclusiones para su contenido.
 - Archivos con varios puntos en el nombre, como `copia.tar.gz`: RF-5, que atiende a la última extensión.
 - Nombres que empiezan por punto y carecen de otra extensión: RF-15 los trata como ocultos antes que como «sin extensión» de RF-6.
 
