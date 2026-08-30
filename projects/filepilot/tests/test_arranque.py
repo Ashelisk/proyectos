@@ -1,11 +1,9 @@
 """T1: la aplicación instalada arranca por sus dos vías y muestra su ayuda."""
 
-import shutil
 import subprocess
 import sys
+import sysconfig
 from pathlib import Path
-
-import pytest
 
 
 def ejecutar(orden, directorio):
@@ -27,16 +25,10 @@ def test_modulo_muestra_ayuda(tmp_path):
     assert "filepilot" in resultado.stdout
 
 
-def localizar_orden():
-    """Busca `filepilot` junto al intérprete en uso y, si no, en el PATH."""
-    junto_al_interprete = shutil.which("filepilot", path=str(Path(sys.executable).parent))
-    return junto_al_interprete or shutil.which("filepilot")
-
-
 def test_orden_instalada_muestra_ayuda(tmp_path):
-    orden = localizar_orden()
-    if orden is None:
-        pytest.skip("la orden `filepilot` no está instalada en este entorno")
+    nombre = "filepilot.exe" if sys.platform == "win32" else "filepilot"
+    orden = Path(sysconfig.get_path("scripts")) / nombre
+    assert orden.is_file(), f"Falta el ejecutable del entorno bajo prueba: {orden}"
 
     resultado = ejecutar([orden, "--help"], tmp_path)
 

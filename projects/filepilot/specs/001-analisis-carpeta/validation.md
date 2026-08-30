@@ -1,56 +1,46 @@
 # Validación — T1: estructura e instalación
 
-**Veredicto: no cumple completamente la revisión de calidad.** Los criterios de arranque e instalación de T1 funcionan en el entorno verificado; quedan una debilidad de las pruebas, una redundancia respecto a la constitución y documentación de estado desactualizada. No se han modificado el código ni las casillas de tareas.
+**Veredicto: cumple T1 en el entorno verificado.** V-1, V-2 y V-3 están corregidas. Esta comprobación es una autorrevisión de las correcciones, no una revisión independiente ni una validación de toda la spec.
 
 ## Alcance y entorno
 
-Versión revisada: `5d42ab5`. Fecha: 2026-08-30. Windows AMD64, Python 3.14.7 y pytest 9.1.1, utilizando el entorno virtual y la instalación editable existentes. Revisión limitada a [T1](tasks.md), según [plan.md](plan.md), [spec.md](spec.md) y la [constitución](../../docs/constitution.md). No se ha reconstruido el entorno desde cero.
+Correcciones de T1 sobre `540e3a9`, contenidas en el mismo commit que este informe. Fecha: 2026-08-30. Windows AMD64, Python 3.14.7 y pytest 9.1.1. Se utilizó la instalación editable existente en `.venv`, sin reconstruir el entorno.
+
+Alcance: [T1](tasks.md), según [plan.md](plan.md), [spec.md](spec.md) y la [constitución](../../docs/constitution.md). T2 a T14 siguen pendientes; no se han cambiado los requisitos ni implementado el análisis.
 
 ## Evidencia ejecutada
 
-Desde la raíz del producto:
+Suite completa desde `projects/filepilot/`, con un directorio temporal nuevo reservado para la comprobación:
 
 ```powershell
-.\.venv\Scripts\python.exe -B -m pytest tests/test_arranque.py -q -rA -p no:cacheprovider --basetemp ../../.sdd-check/t1-review-1788114659864/pytest
+.\.venv\Scripts\python.exe -B -m pytest -q -rA -p no:cacheprovider --basetemp ../../.sdd-check/t1-fix-1788116393436/suite
 ```
 
-Resultado: **3 pruebas superadas, ninguna omitida**, en 0,35 s. El directorio temporal se creó exclusivamente para esta revisión.
+Resultado: **3 pruebas superadas, ninguna omitida**, en 0,37 s.
 
-Además, desde una carpeta temporal ajena al producto, se ejecutaron por su ruta absoluta el intérprete de ese entorno con `-I -B -m filepilot --help` y su `Scripts/filepilot.exe --help`: ambos devolvieron ayuda y código cero. Se comprobó que el módulo importado corresponde al producto revisado, sin depender del ejecutable localizado mediante el PATH global.
+Desde una carpeta temporal ajena al producto, se ejecutaron por sus rutas absolutas el intérprete del entorno con `-I -B -m filepilot --help` y `Scripts/filepilot.exe --help`: ambos mostraron ayuda, sin salida de error y con código cero. El módulo importado corresponde al código de este producto. Además, `main([])` mostró ayuda y devolvió cero aun teniendo el proceso una opción inválida en `sys.argv`, comprobando que respeta la lista explícita.
 
-Los metadatos instalados indican versión `0.1.0`, Python `>=3.11`, entrada `filepilot.cli:main` y únicamente `pytest>=8; extra == "dev"` en las dependencias declaradas. El sistema de construcción está separado de las dependencias de ejecución.
+Los metadatos instalados indican versión `0.1.0`, Python `>=3.11`, entrada `filepilot.cli:main` y únicamente `pytest>=8; extra == "dev"` como dependencia. El sistema de construcción está separado de las dependencias de ejecución.
+
+**Ausencia del ejecutable:** en un proceso separado, con `unittest.mock.patch`, se hizo que `sysconfig.get_path("scripts")` apuntara a una ruta temporal inexistente y que `shutil.which` devolviera `None`. Se ejecutó solo `test_orden_instalada_muestra_ayuda` mediante `pytest.main`. La versión previa omitía la prueba y devolvía cero; la corregida produjo **1 fallo y código 1**, con el mensaje que identifica el ejecutable ausente. No se borraron ni alteraron ejecutables reales. Este fallo deliberado confirma la detección de una instalación incompleta; no es un fallo de la suite normal.
+
+## Cumplimiento
 
 | Requisito o criterio | Evidencia | Resultado | Limitación |
 | --- | --- | --- | --- |
-| T1: comando instalado y ejecución como módulo | Suite y ejecución directa desde carpeta temporal | Cumple | Windows / Python 3.14.7 |
-| T1: prueba de arranque recogida y superada | 3 pruebas superadas | Cumple | La prueba del comando permite omitir un fallo de instalación; V-1 |
-| RNF-1: sin dependencias externas de ejecución | Metadatos instalados y revisión de `pyproject.toml` | Cumple, parcial | El funcionamiento completo sin red corresponde a T13 |
-| Constitución: imports y código estrictamente necesarios | Inspección de `cli.py` | Falla, menor | Redundancia localizada; V-2 |
-| T1: no adelantar el análisis | Inspección del paquete | Cumple | El subcomando y sus errores siguen pendientes de T2 |
-| RNF-2: Python 3.11, Linux y macOS | No ejecutado | No verificado | Pendiente de T12; no se ha inventariado todo intérprete del equipo |
+| T1: comando instalado y ejecución como módulo | Suite y arranque directo desde carpeta temporal | Cumple | Windows / Python 3.14.7; instalación existente |
+| T1: prueba de arranque efectiva | 3 pruebas superadas; ausencia simulada produce fallo, no omisión | Cumple | El escenario de ausencia es simulado |
+| RNF-1: sin dependencias externas de ejecución | Metadatos instalados y revisión de `pyproject.toml` | Cumple, parcial | Funcionamiento completo sin red pendiente de T13 |
+| Constitución: imports y código necesarios | Inspección del cambio y arranque verificado | Cumple | Limitado a T1 |
+| T1: sin adelantar el análisis | Paquete sin subcomando ni recorrido | Cumple | T2 a T14 pendientes |
+| RNF-2 y versión mínima del plan | Python 3.11, Linux y macOS no ejecutados | No verificado | Pendiente de T12 |
 
-## Incidencias
+## Incidencias corregidas
 
-### V-1 — Una instalación sin comando puede dar una suite en verde
+| Incidencia | Corrección | Comprobación |
+| --- | --- | --- |
+| V-1: prueba omitida o ejecutable ajeno | [test_arranque.py](../../tests/test_arranque.py) exige el archivo en el directorio de scripts del intérprete, sin buscar en el PATH ni omitir su ausencia | Arranque real superado y ausencia simulada detectada |
+| V-2: lectura redundante de argumentos | [cli.py](../../filepilot/cli.py) pasa `argv` directamente a `parse_args`; retirado el import de `sys` | Ambos arranques y lista explícita verificados |
+| V-3: estado anterior a T1 | [tasks.md](tasks.md), [README](../../../../README.md) y [AGENTS.md](../../../../AGENTS.md) reflejan T1 completada y el alcance pendiente | Revisión del diff y de las referencias |
 
-**Prioridad media.** [test_arranque.py](../../tests/test_arranque.py), líneas 30–39. Si no encuentra el comando, la prueba lo omite; si hay otro `filepilot` en el PATH global, puede probar una instalación distinta.
-
-Reproducción sin editar archivos: en un proceso separado se sustituyó `shutil.which` por una función que devuelve `None` y se ejecutó con `pytest.main` la prueba `test_orden_instalada_muestra_ayuda`. Resultado: **1 prueba omitida y código 0**. Esto no invalida el arranque comprobado directamente, pero permite que una regresión de instalación pase inadvertida.
-
-Corrección: exigir el comando del entorno bajo prueba y fallar si falta; no sustituirlo por otro del PATH global. Esta ausencia no es una limitación de plataforma admisible en T1.
-
-### V-2 — Lectura manual de argumentos innecesaria
-
-**Prioridad baja.** [cli.py](../../filepilot/cli.py), líneas 4 y 17. `parse_args(argv)` admite `None` para usar los argumentos del proceso; el condicional y el import de `sys` en este módulo resultan innecesarios. Referencia: [ArgumentParser.parse_args](https://docs.python.org/3.11/library/argparse.html#argparse.ArgumentParser.parse_args).
-
-Corrección: pasar `argv` directamente y retirar ese import, conservando el comportamiento actual. No requiere adelantar T2.
-
-### V-3 — El estado documental todavía sitúa el trabajo antes de T1
-
-**Prioridad baja.** [tasks.md](tasks.md), línea 51, sigue señalando T1 como primera tarea ejecutable pese a estar marcada y tener evidencia. El [README general](../../../../README.md) sigue diciendo que no hay código y el apartado de verificación de [AGENTS.md](../../../../AGENTS.md) tampoco refleja los comandos existentes.
-
-Corrección: reflejar T1 implementada con observaciones pendientes y T2 como siguiente tarea funcional. Mantener explícito que todavía no existe análisis de carpetas ni compatibilidad multiplataforma verificada.
-
-## Siguiente paso
-
-Corregir V-1 y V-2, repetir las tres pruebas y verificar que la ausencia del comando produce un fallo de prueba; actualizar el estado de V-3. No es necesario cambiar la spec ni el plan. La respuesta provisional sin argumentos y el código de uso incorrecto pendiente pertenecen a T2; no se consideran una implementación anticipada ni una validación del contrato final.
+Siguiente tarea: **T2**, todavía sin iniciar. La ayuda provisional sin argumentos y el tratamiento definitivo del uso incorrecto se completarán en esa tarea.

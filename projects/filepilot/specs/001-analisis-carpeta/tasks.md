@@ -40,15 +40,15 @@ Derivadas de [plan.md](plan.md) y trazadas a los requisitos de [spec.md](spec.md
 
 ## Evidencia
 
-**T1, 2026-08-30.** Entorno aislado creado con `python -m venv .venv` e instalación editable con `python -m pip install -e ".[dev]"`. `python -m pytest -q` desde `projects/filepilot/`: 3 pruebas superadas. Desde una carpeta temporal ajena al proyecto, `filepilot --help` y `python -m filepilot --help` muestran la ayuda y devuelven cero. `importlib.metadata` confirma que la distribución instalada no declara dependencias de ejecución; `pytest` figura solo bajo el extra `dev`.
+**T1, 2026-08-30.** Entorno aislado creado con `python -m venv .venv` e instalación editable con `python -m pip install -e ".[dev]"`. Tras corregir las observaciones de T1, la suite completa vuelve a superar sus 3 pruebas, sin omisiones, en Windows con Python 3.14.7 y pytest 9.1.1. Las dos formas de arranque muestran la ayuda y devuelven cero desde una carpeta temporal ajena al proyecto. La prueba exige el ejecutable del entorno bajo prueba y falla si falta, sin buscar otro en el PATH. `importlib.metadata` confirma que no se declaran dependencias de ejecución; `pytest` figura solo bajo el extra `dev`. Los comandos ejecutados, las comprobaciones adicionales y el cierre de V-1 a V-3 están en [validation.md](validation.md).
 
-Límite: la única versión de Python disponible en el equipo es 3.14.7, que cumple el mínimo declarado. La ejecución sobre 3.11 y sobre las demás plataformas de RNF-2 queda pendiente de T12; no se afirma aquí compatibilidad no ejecutada.
+Límite: las correcciones se verificaron con la instalación editable existente, sin reconstruir el entorno. Python 3.11, Linux y macOS quedan pendientes de T12; no se afirma compatibilidad no ejecutada.
 
 ## Cobertura y estado
 
 RF-1 (T8, T13), RF-2 (T2), RF-3 (T5), RF-4 (T5, T6), RF-5 (T4), RF-6 (T4), RF-7 (T4, T8), RF-8 (T8), RF-9 (T6), RF-10 (T11, T13), RF-11 (T3), RF-12 (T9, T10), RF-13 (T10), RF-14 (T3, T6, T13), RF-15 (T6, T7), RF-16 (T3, T13), RNF-1 (T1, T13), RNF-2 (T12), RNF-3 (T10).
 
-Primera tarea ejecutable: T1, sin bloqueos. Tras T1, T4 es independiente de T2 y T3; la ejecución seguirá las reglas de coordinación del repositorio. Las demás tareas quedan pendientes de sus dependencias, sin decisiones de producto abiertas. La revisión documental no ejecuta T1 ni acredita requisitos implementados.
+T1 completada, con sus observaciones corregidas y verificadas. Siguiente tarea: T2, sin bloqueos y todavía sin iniciar. T4 también tiene su dependencia satisfecha y es independiente de T2 y T3; la ejecución seguirá las reglas de coordinación del repositorio. T2 a T14 permanecen pendientes; no hay decisiones de producto abiertas ni análisis de carpetas implementado.
 
 Quedan fuera de estas tareas los comportamientos excluidos por la spec: mover u organizar archivos, conflictos de nombre, duplicados, reglas configurables, salida en JSON y deshacer.
 
