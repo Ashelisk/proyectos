@@ -216,15 +216,33 @@ def run_claude(args, cwd, message, timeout):
             os.killpg(process.pid, signal.SIGKILL)
         process.communicate()
         raise BridgeError("Envío interrumpido o tiempo agotado; revisar la copia antes de reintentar.") from problem
-    if process.returncode:
-        raise BridgeError(f"Claude terminó con código {process.returncode}: {(error or output)[-2000:]}")
     try:
-        return json.loads(output)
+        response = json.loads(output)
     except json.JSONDecodeError as problem:
+        if process.returncode:
+            raise BridgeError(f"Claude terminó con código {process.returncode}: {(error or output)[-2000:]}") from problem
         raise BridgeError("Claude no devolvió un resultado JSON válido.") from problem
+    if isinstance(response, dict):
+        # Un error del proceso puede traer un JSON válido con consumo facturable.
+        response["_bridge_returncode"] = process.returncode
+    elif process.returncode:
+        raise BridgeError(f"Claude terminó con código {process.returncode}, sin un resultado válido.")
+    return response
+
+
+def response_cost(response, session_id):
+    if not isinstance(response, dict) or response.get("session_id") != session_id:
+        raise BridgeError("La respuesta no acredita consumo de esta sesión.")
+    cost = response.get("total_cost_usd")
+    if isinstance(cost, bool) or not isinstance(cost, (int, float)) or not math.isfinite(cost) or cost < 0:
+        raise BridgeError("Falta una estimación válida del consumo.")
+    return cost
 
 
 def validate_response(response, session_id):
+    if isinstance(response, dict) and response.get("_bridge_returncode"):
+        raise BridgeError(f"Claude terminó con código {response['_bridge_returncode']}: "
+                          f"{str(response.get('result', 'Sin entrega válida'))[-1000:]}")
     if (not isinstance(response, dict) or response.get("type") != "result"
             or response.get("subtype") != "success" or response.get("is_error", False)):
         raise BridgeError("La ejecución no produjo una entrega válida.")
@@ -238,10 +256,7 @@ def validate_response(response, session_id):
     for key in ("cambios", "pruebas", "preguntas"):
         if not isinstance(result[key], list) or not all(isinstance(item, str) for item in result[key]):
             raise BridgeError(f"Campo no válido: {key}")
-    cost = response.get("total_cost_usd")
-    if isinstance(cost, bool) or not isinstance(cost, (int, float)) or not math.isfinite(cost) or cost < 0:
-        raise BridgeError("Falta una estimación válida del consumo.")
-    return result, cost
+    return result
 
 
 def send_run(repo, name, message, model=None, effort=None, reason=None):
@@ -276,6 +291,7 @@ def send_run(repo, name, message, model=None, effort=None, reason=None):
         state["es_correccion"] = state["estado"] == "corregir"
         state["envios"] += 1
         state["estado"] = "ejecutando"
+        state["consumo_verificado"] = False
         write_json(directory / f'perfil-{state["envios"]}.json', profile)
         write_json(directory / "estado.json", state)
         request = ("Tarea autorizada: " + state["tarea"] + "\n"
@@ -287,8 +303,9 @@ def send_run(repo, name, message, model=None, effort=None, reason=None):
         try:
             response = run_claude(claude_arguments(state), worktree, request, state["timeout"])
             write_json(directory / f'respuesta-{state["envios"]}.json', response)
-            result, cost = validate_response(response, state["session_id"])
-            state["coste_estimado_usd"] += cost
+            state["coste_estimado_usd"] += response_cost(response, state["session_id"])
+            state["consumo_verificado"] = True
+            result = validate_response(response, state["session_id"])
             state["respuesta"] = result
             usage = response.get("modelUsage", {})
             if not isinstance(usage, dict) or profile["modelo"] not in usage:

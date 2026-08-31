@@ -1,5 +1,6 @@
 """Contrato del puente con repositorios desechables y transporte simulado."""
 
+import json
 import os
 import subprocess
 import sys
@@ -245,6 +246,79 @@ class PuenteTests(unittest.TestCase):
                                       self.repo, "", 5)
             self.assertEqual(result["effort"], "xhigh")
             self.assertEqual(os.environ["CLAUDE_CODE_EFFORT_LEVEL"], "low")
+
+    @patch("puente.claude_arguments")
+    def test_salida_no_cero_conserva_json_y_consumo_sin_reactivar(self, arguments):
+        initial = self.init()
+        response = {"type": "result", "subtype": "success", "is_error": True,
+                    "session_id": initial["session_id"], "total_cost_usd": 0.85,
+                    "api_error_status": 429, "result": "Session limit"}
+        code = f"import sys; print({json.dumps(response)!r}); sys.exit(1)"
+        arguments.return_value = [sys.executable, "-c", code]
+
+        result = puente.send_run(self.repo, "caso", "Prueba local sin llamar a Claude.")
+
+        self.assertEqual(result["estado"], "error")
+        self.assertEqual(result["coste_estimado_usd"], 0.85)
+        self.assertTrue(result["consumo_verificado"])
+        saved = Path(result["worktree"]).parent / "respuesta-1.json"
+        self.assertEqual(json.loads(saved.read_text())["api_error_status"], 429)
+        with self.assertRaises(puente.BridgeError):
+            puente.send_run(self.repo, "caso", "No reintentar automáticamente.")
+        with self.assertRaises(puente.BridgeError):
+            puente.review_run(self.repo, "caso", result["huella"], "aprobar", "No es entrega.")
+        self.assertEqual(arguments.call_count, 1)
+
+    @patch("puente.run_claude")
+    def test_consumo_se_acumula_aunque_falle_el_esquema(self, transport):
+        transport.side_effect = self.response
+        self.init()
+        first = puente.send_run(self.repo, "caso", "Primera entrega.")
+        puente.review_run(self.repo, "caso", first["huella"], "corregir", "Defecto.")
+
+        def malformed(*args):
+            result = self.response(*args)
+            result["total_cost_usd"] = 0.75
+            result.pop("structured_output")
+            return result
+
+        transport.side_effect = malformed
+        result = puente.send_run(self.repo, "caso", "Corrección.")
+        self.assertEqual(result["estado"], "error")
+        self.assertAlmostEqual(result["coste_estimado_usd"], 0.8)
+        self.assertTrue(result["consumo_verificado"])
+        self.assertEqual(result["envios"], 2)
+
+    @patch("puente.run_claude")
+    def test_coste_invalido_no_se_interpreta_como_cero(self, transport):
+        for number, cost in enumerate((None, True, -1, float("nan"), "0.5")):
+            name = f"coste-{number}"
+            puente.init_run(self.repo, name, "Prueba", [], [])
+
+            def invalid(*args):
+                result = self.response(*args)
+                result["total_cost_usd"] = cost
+                return result
+
+            transport.side_effect = invalid
+            result = puente.send_run(self.repo, name, "Lee.")
+            self.assertEqual(result["estado"], "error")
+            self.assertFalse(result["consumo_verificado"])
+
+    @patch("puente.run_claude")
+    def test_respuesta_ajena_no_acredita_consumo(self, transport):
+        self.init()
+
+        def wrong(*args):
+            result = self.response(*args)
+            result["session_id"] = "otra-sesion"
+            return result
+
+        transport.side_effect = wrong
+        result = puente.send_run(self.repo, "caso", "Lee.")
+        self.assertEqual(result["estado"], "error")
+        self.assertEqual(result["coste_estimado_usd"], 0)
+        self.assertFalse(result["consumo_verificado"])
 
 
 if __name__ == "__main__":
