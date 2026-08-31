@@ -34,6 +34,6 @@ El perfil base del programador en este puente es Opus 5 con esfuerzo extra (`cla
 
 ## Verificación
 
-FilePilot dispone del paquete instalable, el subcomando `analizar` y la validación de la ruta indicada; el análisis del contenido de las carpetas sigue pendiente. Consulta los comandos y el estado vigente en [sus tareas](projects/filepilot/specs/001-analisis-carpeta/tasks.md) y la evidencia en [su validación](projects/filepilot/specs/001-analisis-carpeta/validation.md). No inventes resultados ni afirmes compatibilidad sin ejecutarla. Al crear cada producto, documenta sus comandos reales. Para el paquete SDD, comprueba formato de skills y referencias, y contrasta los cambios importantes con escenarios de uso.
+FilePilot dispone del paquete instalable, el subcomando `analizar`, validación de la raíz y módulos de clasificación y recorrido; el recorrido todavía no está conectado al CLI y quedan pendientes las exclusiones completas y el informe. Consulta los comandos y el estado vigente en [sus tareas](projects/filepilot/specs/001-analisis-carpeta/tasks.md) y la evidencia en [su validación](projects/filepilot/specs/001-analisis-carpeta/validation.md). No inventes resultados ni afirmes compatibilidad sin ejecutarla. Al crear cada producto, documenta sus comandos reales. Para el paquete SDD, comprueba formato de skills y referencias, y contrasta los cambios importantes con escenarios de uso.
 
 Los recursos de `.sdd-check/` son material temporal de validación, excluido del repositorio. No uses sus ejemplos como requisitos de los productos reales.

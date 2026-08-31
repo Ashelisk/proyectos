@@ -33,6 +33,8 @@ Estructuras internas, todas de solo lectura una vez creadas:
 - `EntradaOmitida(ruta, motivo, detalle)` — `motivo` es uno de `oculto`, `enlace`, `sin_permiso`, `error_lectura`, asignado una sola vez con esa prioridad y usado para los recuentos y el código de salida (RF-9, RF-13). `detalle` expresa en español la causa real a partir del tipo y código del fallo, sin copiar mensajes dependientes del idioma del sistema ni inventar una causa desconocida. Está vacío para las omisiones por ocultación o enlace.
 - `ResultadoRecorrido(archivos, omitidas, subcarpetas_encontradas, subcarpetas_recorridas)`.
 
+`recorrer(raiz: Path, recursivo: bool = False) -> ResultadoRecorrido` recibe la raíz validada por T3. Devuelve registros congelados y colecciones en tuplas; la raíz no cuenta como subcarpeta. La integración con el CLI y el tratamiento completo de exclusiones y fallos se realizan en sus tareas correspondientes.
+
 Contrato de línea de órdenes:
 
 ```
