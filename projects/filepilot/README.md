@@ -22,7 +22,7 @@ py -3.11 -m venv .venv
 pip install .
 ```
 
-Linux y macOS:
+Linux:
 
 ```bash
 python3 -m venv .venv

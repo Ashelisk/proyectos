@@ -6,7 +6,7 @@ Primera funcionalidad de FilePilot: examinar una carpeta, clasificar sus archivo
 
 ## Usuarios e historias
 
-Persona que administra sus propios archivos desde la terminal, en Linux, macOS o Windows.
+Persona que administra sus propios archivos desde la terminal, en Linux o Windows.
 
 - Quiere saber qué hay en una carpeta acumulada y cuánto ocupa cada tipo de contenido.
 - Quiere ver el reparto propuesto por FilePilot antes de confiarle sus archivos.
@@ -60,7 +60,7 @@ Persona que administra sus propios archivos desde la terminal, en Linux, macOS o
 ## Requisitos no funcionales
 
 - RNF-1: Funcionamiento local: sin acceso a red, cuentas ni servicios externos.
-- RNF-2: Ejecución en Linux, macOS y Windows, admitiendo rutas relativas y absolutas y nombres de archivo con caracteres no ASCII.
+- RNF-2: Ejecución en Linux y Windows, admitiendo rutas relativas y absolutas y nombres de archivo con caracteres no ASCII.
 - RNF-3: Los mensajes de error identificarán la ruta afectada y la causa, en español.
 
 ## Casos límite

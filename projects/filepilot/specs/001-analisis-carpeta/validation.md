@@ -1,8 +1,8 @@
 # Validación — FilePilot, especificación 001
 
-**V-9 y V-10 corregidos y verificados.** El análisis, las exclusiones y el informe están integrados. T1 a T13 cumplen sus condiciones dentro del alcance ejecutado; T14 conserva pendiente la ejecución de sus comandos de Linux/macOS.
+**V-9 y V-10 corregidos y verificados.** El análisis, las exclusiones y el informe están integrados. T1 a T13 cumplen sus condiciones dentro del alcance ejecutado; T14 conserva pendiente la ejecución de sus comandos de Linux.
 
-**Veredicto global: no concluyente.** No quedan defectos demostrados abiertos, pero faltan pruebas en Linux y macOS y de enlaces simbólicos y permisos reales. No se declara validada toda la compatibilidad de la spec.
+**Veredicto global: no concluyente.** No quedan defectos demostrados abiertos, pero faltan pruebas en Linux y comprobaciones reales de enlaces simbólicos y permisos. No se declara validada toda la compatibilidad de la spec.
 
 ## Alcance y entorno
 
@@ -31,7 +31,7 @@ La suite incluye 24 escenarios de salida redirigida: módulo y ejecutable, cuatr
 
 Las comprobaciones adicionales están en `.sdd-check/puente/filepilot-t6-t14-20260831/test_revision_limites.py` y `revision_cli.py`. Se ejecutaron desde la raíz Git con cada intérprete del producto integrado. Sus resultados de CLI se conservan en `.sdd-check/cierre-cli311.json` y `cierre-cli314.json`. Estos archivos temporales no forman parte del paquete publicado; las regresiones permanentes están en `tests/`.
 
-Se verificó también una instalación nueva en `.sdd-check/readme-cierre/projects/filepilot/`: comandos de Windows del README, instalación normal y editable, ambas entradas y `pytest`. La suite dio **205 superadas y 8 omitidas** (17,25 s). `PYTEST_ADDOPTS` únicamente desactivó la caché y fijó el directorio temporal. Los comandos de Linux/macOS no se ejecutaron.
+Se verificó también una instalación nueva en `.sdd-check/readme-cierre/projects/filepilot/`: comandos de Windows del README, instalación normal y editable, ambas entradas y `pytest`. La suite dio **205 superadas y 8 omitidas** (17,25 s). `PYTEST_ADDOPTS` únicamente desactivó la caché y fijó el directorio temporal. Los comandos de Linux no se ejecutaron.
 
 ## Cumplimiento
 
@@ -48,10 +48,10 @@ Se verificó también una instalación nueva en `.sdd-check/readme-cierre/projec
 | RF-12 | Tres escenarios vacíos en subproceso y ausencia de archivos con error | Cumple | Conserva cero o tres según los motivos |
 | RF-13 | Fallos inyectados, continuación, causa española y código tres | Cumple | No acredita permisos reales |
 | RF-14 | Raíz oculta, poda, inclusión y demás exclusiones vigentes | Cumple, parcial | Raíz simbólica real pendiente |
-| RF-15 | Tres pruebas con atributo Windows real y fallos controlados | Cumple en Windows | Linux/macOS no ejecutados |
+| RF-15 | Tres pruebas con atributo Windows real y fallos controlados | Cumple en Windows | Linux no ejecutado |
 | RF-16 | Pruebas reales omitidas; unión de directorio resuelta | No verificado | La unión no sustituye al enlace simbólico |
 | RNF-1 | Sin dependencias de ejecución; vigilancia de intentos y eventos de red | Cumple | Análisis ejecutados |
-| RNF-2 | Ambas versiones, rutas relativas/absolutas y Unicode | Cumple, parcial | Linux/macOS pendientes |
+| RNF-2 | Ambas versiones, rutas relativas/absolutas y Unicode | Cumple, parcial | Linux pendiente |
 | RNF-3 | Uso, raíz y avisos con errores cuyo texto original está en otro idioma | Cumple | Causas derivadas del tipo y código, no del texto del sistema |
 
 ## Correcciones verificadas
@@ -64,7 +64,7 @@ Se verificó también una instalación nueva en `.sdd-check/readme-cierre/projec
 
 Las ocho omisiones son **siete pruebas de enlaces simbólicos** sin privilegio (`WinError 1314`) y **una de permisos reales** mediante `chmod`, no aplicable en Windows. Las tres pruebas del atributo oculto real pasan. Los fallos inyectados y la unión de directorio no sustituyen esas comprobaciones.
 
-Para cerrar la validación global: ejecutar el análisis y la suite en Linux y macOS con las versiones previstas, verificar enlaces/permisos reales en un entorno que permita preparar los casos y ejecutar los comandos POSIX del README para cerrar T14. No hay más comportamiento de producto por definir ni defectos de V-9/V-10 pendientes de implementación.
+Para cerrar la validación global: ejecutar el análisis y la suite en Linux con las versiones previstas, verificar enlaces/permisos reales en un entorno que permita preparar los casos y ejecutar los comandos POSIX del README para cerrar T14. No hay más comportamiento de producto por definir ni defectos de V-9/V-10 pendientes de implementación.
 
 ## Evidencia anterior conservada
 

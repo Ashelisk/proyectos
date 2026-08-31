@@ -12,7 +12,7 @@ filepilot/__init__.py, __main__.py, cli.py, recorrido.py, clasificacion.py, info
 tests/
 ```
 
-Python 3.11 o superior permite una base compatible con pytest y con soporte de seguridad previsto hasta octubre de 2027 para la versión mínima ([ciclo de soporte](https://devguide.python.org/versions/)). Las pruebas se ejecutarán con la versión mínima y con la última estable disponible en cada plataforma; la validación identificará las versiones realmente utilizadas.
+Python 3.11 o superior permite una base compatible con pytest y con soporte de seguridad previsto hasta octubre de 2027 para la versión mínima ([ciclo de soporte](https://devguide.python.org/versions/)). Las pruebas se ejecutarán con la versión mínima y con la última estable disponible en Linux y Windows; la validación identificará las versiones realmente utilizadas.
 
 ## Componentes
 
@@ -60,7 +60,7 @@ Formato del informe: una fila por grupo con categoría, recuento, tamaño en bas
 
 **Detección de oculto por plataforma.** Nombre que empieza por punto en cualquier sistema y, en Windows, además el bit `FILE_ATTRIBUTE_HIDDEN` de `st_file_attributes`. Su ausencia solo se tolera fuera de Windows. Si la consulta falla en Windows, se respeta la prioridad de RF-9: `sin_permiso` cuando esa sea la causa y `error_lectura` para los demás fallos, con su aviso (RF-15, RF-13). Un atributo no comprobado no se interpreta como ausencia de ocultación; las exclusiones se aplican dentro del alcance de RF-4 y RF-14.
 
-**Formato de tamaño sin `locale`.** El separador decimal se escribe directamente como coma, en lugar de depender de la configuración regional del sistema, para que la misma carpeta produzca el mismo informe en las tres plataformas y las pruebas sean deterministas (RF-7, RNF-2).
+**Formato de tamaño sin `locale`.** El separador decimal se escribe directamente como coma, en lugar de depender de la configuración regional del sistema, para que la misma carpeta produzca el mismo informe en ambas plataformas objetivo y las pruebas sean deterministas (RF-7, RNF-2).
 
 **Salida con codificación restrictiva.** El CLI conserva la codificación de sus salidas y usa `backslashreplace` para representar como escapes los caracteres no admitidos, sin abortar el análisis. Las capturas Unicode en memoria no requieren ajuste. Las pruebas de RNF-2 incluyen ambas entradas del programa con salida redirigida en UTF-8, cp1252 y ASCII.
 

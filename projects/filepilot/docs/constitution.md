@@ -1,6 +1,6 @@
 # Constitución — FilePilot
 
-CLI en Python para organizar archivos en Linux, macOS y Windows. Funcionamiento local, sin cuentas ni servicios externos.
+CLI en Python para organizar archivos en Linux y Windows. Funcionamiento local, sin cuentas ni servicios externos.
 
 1. **SDD:** especificar antes de programar. Preguntar las decisiones pendientes; nunca sustituirlas por suposiciones.
 2. **Dependencias mínimas:** importar solo lo necesario y justificar cada dependencia; separar herramientas de desarrollo de la aplicación.
