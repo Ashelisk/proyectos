@@ -25,6 +25,8 @@ Python 3.11 o superior permite una base compatible con pytest y con soporte de s
 
 ## Datos y contratos
 
+`clasificar(nombre: str) -> Categoria` recibe un nombre de archivo, sin consultar el sistema de archivos. `Categoria` enumera los siete grupos; su propiedad `carpeta` devuelve el nombre de destino de RF-7. La exclusión de ocultos pertenece al recorrido, no a la clasificación.
+
 Estructuras internas, todas de solo lectura una vez creadas:
 
 - `ArchivoAnalizado(ruta, categoria, tamano)` — un archivo clasificado.
@@ -41,7 +43,7 @@ filepilot analizar <ruta> [--recursivo] [--incluir-ocultos]
 | --- | --- | --- |
 | 0 | Informe emitido sin omisiones por permiso ni por error de lectura | RF-1, RF-12 |
 | 1 | Uso incorrecto: falta la ruta u opción desconocida | RF-2 |
-| 2 | La ruta no existe, no es un directorio o no puede leerse | RF-11 |
+| 2 | Ruta vacía, inexistente, no directorio o fallo al resolver o leer la raíz | RF-11 |
 | 3 | Informe emitido con omisiones por permiso o por error de lectura | RF-13 |
 
 El informe va a la salida estándar; los avisos por elemento fallido y los errores de ruta, a la salida de error, redactados en español e identificando ruta y causa (RNF-3). El recorrido no escribe en ninguna salida: devuelve cada `EntradaOmitida` con su `detalle`, y `cli.py` es el único responsable de emitir un aviso por cada entrada omitida que lo lleve y de decidir el código de salida a partir de los motivos presentes. Así el recuento y el texto comunicado proceden del mismo dato y ninguna causa se reconstruye por suposición. Ningún componente escribe en disco (RF-10) ni abre conexiones de red: la aplicación se limita a la biblioteca estándar y no consulta servicios ni credenciales (RNF-1).
@@ -58,7 +60,7 @@ Formato del informe: una fila por grupo con categoría, recuento, tamaño en bas
 
 **Formato de tamaño sin `locale`.** El separador decimal se escribe directamente como coma, en lugar de depender de la configuración regional del sistema, para que la misma carpeta produzca el mismo informe en las tres plataformas y las pruebas sean deterministas (RF-7, RNF-2).
 
-**Resolución de la raíz.** La ruta indicada se resuelve siguiendo enlaces antes de comprobar que es un directorio legible, lo que cubre RF-16 y permite analizar una raíz oculta sin `--incluir-ocultos` (RF-14). Las exclusiones se evalúan solo sobre lo encontrado dentro.
+**Resolución de la raíz.** Una cadena vacía se rechaza antes de resolverla, sin convertirla en el directorio actual. Las demás rutas se resuelven siguiendo enlaces antes de comprobar que son un directorio legible, lo que cubre RF-16 y permite analizar una raíz oculta sin `--incluir-ocultos` (RF-14). Los fallos de resolución o lectura, incluidos los bucles de enlaces, terminan en código dos con ruta y causa en español (RF-11). Las exclusiones se evalúan solo sobre lo encontrado dentro.
 
 **Pruebas con pytest como herramienta de desarrollo.** Sus carpetas temporales y sus marcas para omitir pruebas por plataforma reducen el código de las pruebas de sistema de archivos. Se declara como dependencia de desarrollo, separada de la aplicación, que no incorpora dependencias. La alternativa, `unittest` de la biblioteca estándar, evitaría incluso esa dependencia a costa de más código repetido en la preparación de cada árbol de prueba.
 
