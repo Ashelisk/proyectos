@@ -1,14 +1,14 @@
 # Validación — FilePilot, especificación 001
 
-**Versión integrada: T1 a T5 verificadas en el entorno ejecutado.** T1 a T4 no presentan regresiones. El recorrido integrado es un módulo interno: las exclusiones completas, los fallos por entrada y su integración con el CLI y el informe siguen pendientes.
+**V-9 y V-10 corregidos y verificados.** El análisis, las exclusiones y el informe están integrados. T1 a T13 cumplen sus condiciones dentro del alcance ejecutado; T14 conserva pendiente la ejecución de sus comandos de Linux/macOS.
 
-**Última evaluación: la implementación parcial de T6 a T14 no cumple y no se ha integrado.** Presenta fallos de prioridad de exclusiones y de salida Unicode, detallados al final. Esta evaluación no modifica el resultado ni las casillas de las tareas ya integradas.
+**Veredicto global: no concluyente.** No quedan defectos demostrados abiertos, pero faltan pruebas en Linux y macOS y de enlaces simbólicos y permisos reales. No se declara validada toda la compatibilidad de la spec.
 
 ## Alcance y entorno
 
-Revisión y ejecución independiente del código de programación, el 2026-08-31: base `130dabf` más `recorrido.py` y `test_recorrido.py`, integrados en `077b0dc`. Se contrastaron constitución, spec, clarificaciones, plan y tareas. El coordinador actualizó y autorrevisó los documentos; el código integrado coincide con la entrega aprobada del puente.
+Validación del 2026-08-31, base `dcd9112` más el código y las pruebas de esta entrega. Se contrastaron constitución, spec, clarificaciones, plan y tareas. El bloque recibido fue revisado independientemente; las correcciones posteriores y los documentos fueron autorrevisados. Queda disponible para un contraste externo adicional.
 
-Windows 11 AMD64, **Python 3.11.9 y 3.14.7**, con pytest 9.1.1 en ambos entornos. Python 3.11.9 se instaló mediante el gestor oficial, que verificó la firma del índice de distribución; 3.14.7 se conservó como predeterminada. Se usaron instalaciones editables separadas: `.sdd-check/venvs/filepilot-311/` para 3.11 y `projects/filepilot/.venv/` para 3.14. El worktree tuvo además su propio entorno 3.11, comprobando que importaba su propio paquete. No se cambió la versión mínima del producto.
+Windows 11 AMD64, Python **3.11.9 y 3.14.7**, pytest 9.1.1. Instalaciones editables separadas: `.sdd-check/venvs/filepilot-311/` y `projects/filepilot/.venv/`; ambas importan el producto integrado. La versión 3.14 se conserva como predeterminada. No se añadieron dependencias de ejecución ni se modificaron requisitos para hacer pasar las pruebas.
 
 ## Evidencia ejecutada
 
@@ -16,102 +16,59 @@ Desde `projects/filepilot/`:
 
 ```powershell
 $env:PYTHONIOENCODING = 'utf-8'
-..\..\.sdd-check\venvs\filepilot-311\Scripts\python.exe -B -m pytest -q -rs -p no:cacheprovider --basetemp ../../.sdd-check/t5-20260831-integrado311
-.\.venv\Scripts\python.exe -B -m pytest -q -rs -p no:cacheprovider --basetemp ../../.sdd-check/t5-20260831-integrado314
+../../.sdd-check/venvs/filepilot-311/Scripts/python.exe -B -m pytest -q -p no:cacheprovider --basetemp ../../.sdd-check/cierre-final311
+.venv/Scripts/python.exe -B -m pytest -q -p no:cacheprovider --basetemp ../../.sdd-check/cierre-final314
 ```
-
-| Entorno y versión evaluada | Superadas | Omitidas | Tiempo |
-| --- | --- | --- | --- |
-| Python 3.11.9, T1–T4 antes de T5 | 92 | 4 | 3,33 s |
-| Python 3.11.9, entrega T5 en worktree | 106 | 5 | 3,20 s |
-| Python 3.11.9, T5 integrada | 106 | 5 | 2,40 s |
-| Python 3.14.7, T5 integrada | 106 | 5 | 2,93 s |
-
-Las pruebas de T5 se escribieron antes del módulo: `pytest tests/test_recorrido.py` falló por `ModuleNotFoundError: filepilot.recorrido` en 3.11.9 (0,20 s), con el paquete instalado. Después pasan **14 pruebas de T5** y se omite una por no poder crear un enlace simbólico real. Se comprueban primer nivel y modo recursivo, recuentos sin incluir la raíz, carpetas nunca clasificadas como archivos, categorías y bytes reales, vacío, un árbol de 30 niveles y datos inmutables. La simulación de un enlace a un directorio externo verifica que su contenido no se alcanza; complementa, pero no sustituye, la prueba real omitida.
-
-La inspección confirma una pila iterativa y el cierre de `scandir` por directorio, metadatos sin seguimiento de enlaces y ausencia de aperturas de contenido. Los enlaces detectados se registran como omitidos con motivo `enlace` y detalle vacío. Los demás motivos y su prioridad pertenecen a T6/T7/T10: no se dan por verificados.
-
-El puente utilizó dos envíos de Opus 5 en la misma sesión: esfuerzo `high` para las pruebas y `medium` para implementar el contrato revisado. Se respetaron sus límites. Los encargos, respuestas y aprobación están en `.sdd-check/puente/filepilot-t5-20260831/`, excluidos de Git. Claude programó; el coordinador revisó, ejecutó las pruebas e integró únicamente los dos archivos aprobados.
-
-## Cumplimiento
-
-| Requisito o criterio | Evidencia | Resultado | Limitación |
-| --- | --- | --- | --- |
-| T1: arranque y dependencias declaradas | Instalaciones separadas, ambas entradas desde carpeta temporal y metadatos | Cumple | Windows, versiones indicadas |
-| RF-2 / T2 | Pruebas de argumentos, ayudas y errores con código uno | Cumple | No se exige ayuda íntegramente en español |
-| RF-3 / T5 | Archivos del primer nivel o de todos los niveles según el modo | Cumple, parcial | Integración CLI pendiente de T8 |
-| RF-4 / T5 | Recuentos encontrados/recorridos y carpetas ausentes de archivos clasificados | Cumple, parcial | Exclusiones de T6 e informe de T8 pendientes |
-| RF-11 / T3 | Rutas inexistentes, archivo, vacía y fallos de raíz, incluido bucle simulado | Cumple en el alcance ejecutado | Permisos y bucles reales no verificados |
-| RF-14: raíz oculta | Directorio con punto inicial aceptado por T3 | Cumple, parcial | Exclusiones de contenido y atributo Windows pendientes |
-| RF-16: raíz simbólica | Tres pruebas omitidas; unión de directorio resuelta | No verificado | La unión no sustituye al enlace simbólico |
-| RF-5 / T4 | Mapa completo, mayúsculas, última extensión y desconocidas | Cumple | Regresión en ambas versiones |
-| RF-6 / T4 | Grupo independiente para nombres sin extensión | Cumple | Exclusiones pendientes del recorrido |
-| RF-7 / T4 | Siete carpetas exactas | Cumple, parcial | Ubicación en la raíz, tabla y tamaños pendientes de T8 |
-| RF-9: enlaces encontrados | Prueba controlada y registro por inspección | Cumple, parcial | Enlace real omitido; demás motivos y prioridad pendientes |
-| RNF-3: errores de uso y raíz | Regresión de diagnósticos | Cumple, parcial | Avisos por entrada pendientes de T10 |
-| RF-10: clasificación y recorrido | Inspección de código sin escritura ni apertura de contenido | Cumple, parcial | Auditoría del análisis integrado pendiente de T11 |
-| RNF-2 | Suite T1–T5 en Windows 3.11.9 y 3.14.7 | Cumple, parcial | Linux, macOS y portabilidad del informe pendientes de T12 |
-| RNF-1 | Sin dependencias de ejecución ni llamadas de red, por inspección | Cumple, parcial | Comprobación del análisis sin conexiones pendiente de T13 |
-| RF-1, RF-8, RF-12, RF-13 y RF-15 | Funcionalidad todavía no implementada | No verificado | T6 a T13 |
-
-## Hallazgos y límites
-
-- **V-7 y V-8, resueltos:** se conserva el tratamiento localizado del `RuntimeError` de resolución y el rechazo de la cadena vacía definido en RF-11. Las regresiones pasan también en 3.11.9; el bucle se sigue inyectando, sin acreditar un enlace real.
-- Las cinco omisiones son cuatro pruebas de enlaces simbólicos sin privilegio (`WinError 1314`) y la denegación real mediante `chmod`, no aplicable en Windows. Se mantienen pendientes las verificaciones reales en T12/T13.
-- T5 aún no aplica ocultos, la prioridad completa de omisiones ni la recuperación por entrada. Los fallos de E/S del módulo se propagan; su tratamiento corresponde a T6/T10. No se conectó el recorrido al comando ni se implementó el informe. Estos límites no se presentan como requisitos completos.
-- La ayuda conserva encabezados automáticos en inglés, fuera del alcance de RNF-3. La salida del informe con caracteres no representables y redirección sigue pendiente de T8/T12; fijar UTF-8 en las pruebas no cambia la política del producto.
-
-Se conserva como evidencia anterior, no repetida aquí: sobre `8d40133`, 40 invocaciones por ambas entradas con cp1252 y UTF-8 y una auditoría aislada de la raíz sin aperturas de contenido ni cambios del árbol (`.sdd-check/t3-review-1788120184382/`); sobre `1ebccc3`, nueve comprobaciones adicionales de errores de raíz y su rechazo temprano de cadena vacía (`.sdd-check/puente/filepilot-t3-t4-20260831/`). El control negativo del ejecutable de T1 se verificó en `27b02d5`. La evidencia de T4 incluye el fallo previo a implementar y sus 60 pruebas en memoria. Ninguna de estas comprobaciones acredita el futuro análisis completo.
-
-**La versión integrada permite iniciar T6.** T12 continúa pendiente: ejecutar la suite de T1 a T5 en Windows 3.11 no equivale a verificar todas las plataformas ni el producto terminado.
-
-## Evaluación parcial de T6 a T14, sin integrar
-
-Revisión independiente del 2026-08-31 sobre la base `077b0dc`, en una copia aislada. La versión evaluada incluye cambios de clasificación, CLI y recorrido, el informe, pruebas y el README del producto. Huella SHA-256 del conjunto de cambios: `5bc2980703454f79b831faf28b451885f36ea1e7f3ce2dbb56984f3891220ba3`. La copia y las comprobaciones adicionales se conservan localmente en `.sdd-check/puente/filepilot-t6-t14-20260831/`; no forman parte del código publicado.
 
 | Comprobación | Python 3.11.9 | Python 3.14.7 |
 | --- | --- | --- |
-| Suite completa en Windows 11, pytest 9.1.1 | 173 superadas, 8 omitidas; 5,87 s | 173 superadas, 8 omitidas; 6,23 s |
-| Siete casos adicionales de fallos y prioridad | 5 superados, 2 fallidos | 5 superados, 2 fallidos |
-| Módulo y ejecutable, cuatro combinaciones de opciones, UTF-8 y cp1252 | 8 correctos en UTF-8, 8 fallidos en cp1252 | 8 correctos en UTF-8, 8 fallidos en cp1252 |
-| Auditoría independiente en proceso aislado | Sin aperturas de contenido ni conexiones; árbol intacto | Sin aperturas de contenido ni conexiones; árbol intacto |
+| Suite integrada | **205 superadas, 8 omitidas**; 10,25 s | **205 superadas, 8 omitidas**; 10,87 s |
+| Siete casos adicionales de la revisión anterior | 7 superados | 7 superados |
+| Módulo y ejecutable, cuatro combinaciones de opciones, UTF-8/cp1252 | 16 invocaciones correctas | 16 invocaciones correctas |
+| Auditoría independiente reutilizada sobre la versión corregida | Sin aperturas de contenido ni conexiones; árbol intacto | Sin aperturas de contenido ni conexiones; árbol intacto |
 
-Las ocho omisiones corresponden a siete pruebas de enlaces simbólicos sin privilegio y una de permisos reales mediante `chmod`, no aplicable en Windows. Las tres pruebas con atributo oculto real de Windows pasan. Linux y macOS no se ejecutaron; las simulaciones no sustituyen esos entornos ni los enlaces reales.
+La suite incluye 24 escenarios de salida redirigida: módulo y ejecutable, cuatro combinaciones de opciones y UTF-8/cp1252/ASCII, con una raíz de otros alfabetos. Cada subproceso configura su propia codificación; la captura UTF-8 del coordinador no oculta los fallos. Se comprueban la ruta emitida, el informe y el código cero.
 
-Comandos desde `worktree/projects/filepilot/` de la copia local; para 3.14 se sustituyó `.venv/Scripts/python.exe` por `../../../venv314/Scripts/python.exe` y cada directorio temporal terminó en `314`:
+Las comprobaciones adicionales están en `.sdd-check/puente/filepilot-t6-t14-20260831/test_revision_limites.py` y `revision_cli.py`. Se ejecutaron desde la raíz Git con cada intérprete del producto integrado. Sus resultados de CLI se conservan en `.sdd-check/cierre-cli311.json` y `cierre-cli314.json`. Estos archivos temporales no forman parte del paquete publicado; las regresiones permanentes están en `tests/`.
 
-```powershell
-$env:PYTHONIOENCODING = 'utf-8'
-.venv/Scripts/python.exe -B -m pytest -q -rs -p no:cacheprovider --basetemp ../../../bloque-revision311
-.venv/Scripts/python.exe -B -m pytest ../../../test_revision_limites.py -q -p no:cacheprovider --basetemp ../../../limites311
-.venv/Scripts/python.exe -B ../../../revision_cli.py
-```
+Se verificó también una instalación nueva en `.sdd-check/readme-cierre/projects/filepilot/`: comandos de Windows del README, instalación normal y editable, ambas entradas y `pytest`. La suite dio **205 superadas y 8 omitidas** (17,25 s). `PYTEST_ADDOPTS` únicamente desactivó la caché y fijó el directorio temporal. Los comandos de Linux/macOS no se ejecutaron.
 
-`revision_cli.py` establece UTF-8 o cp1252 por subproceso; el ajuste del proceso coordinador no oculta el fallo de codificación. Compara rutas, tamaños y fechas antes y después de cada análisis y registra aperturas y conexiones únicamente durante la llamada al CLI.
+## Cumplimiento
 
-Se ejecutaron también los comandos de Windows del README: creación y activación de `.venv`, `pip install .`, ambas entradas de análisis, `pip install -e ".[dev]"` y `pytest`. Esta última ejecución dio 173 superadas y 8 omitidas (5,16 s), con `PYTEST_ADDOPTS` para desactivar la caché y fijar un directorio temporal aislado. Los comandos de Linux/macOS no se ejecutaron. Se retiró exclusivamente el directorio `build/` generado por esta comprobación y se confirmó la misma huella de código.
+| Requisito | Evidencia | Resultado | Límite |
+| --- | --- | --- | --- |
+| RF-1 | Informes completos por módulo y ejecutable | Cumple | Entornos ejecutados |
+| RF-2 | Ayudas y errores de uso en `test_cli.py` | Cumple | Los encabezados ingleses de la ayuda no están prohibidos |
+| RF-3, RF-4 | Árboles reales, dos modos, recuentos y poda | Cumple | Enlaces reales omitidos |
+| RF-5, RF-6 | 46 extensiones, mayúsculas, última extensión y grupo sin extensión | Cumple | Mapa sin cambios |
+| RF-7, RF-8 | Tabla, tamaños, destinos planos y cinco extensiones con desempate | Cumple | Salida restrictiva comprobada con escapes |
+| RF-9 | Recuentos y prioridad, incluidos fallos de tipo y atributo | Cumple | Enlaces simulados complementan los reales omitidos |
+| RF-10 | Instantáneas, ausencia de carpetas propuestas y auditoría `open` aislada | Cumple | Árboles y modos ejecutados |
+| RF-11 | Regresión de raíz y fallos durante su enumeración tras validar | Cumple, parcial | Permisos y bucles reales no verificados |
+| RF-12 | Tres escenarios vacíos en subproceso y ausencia de archivos con error | Cumple | Conserva cero o tres según los motivos |
+| RF-13 | Fallos inyectados, continuación, causa española y código tres | Cumple | No acredita permisos reales |
+| RF-14 | Raíz oculta, poda, inclusión y demás exclusiones vigentes | Cumple, parcial | Raíz simbólica real pendiente |
+| RF-15 | Tres pruebas con atributo Windows real y fallos controlados | Cumple en Windows | Linux/macOS no ejecutados |
+| RF-16 | Pruebas reales omitidas; unión de directorio resuelta | No verificado | La unión no sustituye al enlace simbólico |
+| RNF-1 | Sin dependencias de ejecución; vigilancia de intentos y eventos de red | Cumple | Análisis ejecutados |
+| RNF-2 | Ambas versiones, rutas relativas/absolutas y Unicode | Cumple, parcial | Linux/macOS pendientes |
+| RNF-3 | Uso, raíz y avisos con errores cuyo texto original está en otro idioma | Cumple | Causas derivadas del tipo y código, no del texto del sistema |
 
-| Requisito | Evidencia de la copia parcial | Resultado y límite |
-| --- | --- | --- |
-| RF-1, RF-2 | CLI integrado, ayudas, uso incorrecto y ambas entradas | Cumple en los escenarios ejecutados; salida restringida afectada por V-10 |
-| RF-3, RF-4 | Primer nivel, recursión, poda y recuentos de subcarpetas | Cumple en los escenarios ejecutados |
-| RF-5, RF-6 | Regresión del mapa completo y grupo sin extensión | Cumple; mapa conservado |
-| RF-7, RF-8 | Filas, tamaños, destinos en la raíz y cinco extensiones con desempate | Cumple en UTF-8; emisión afectada por V-10 |
-| RF-9 | Motivo único y pruebas adicionales de prioridad con fallos | **Falla: V-9** |
-| RF-10 | Instantáneas y auditorías aisladas, incluida comprobación independiente | Cumple en los árboles y modos ejecutados |
-| RF-11 | Regresión y fallos de raíz durante la enumeración posterior a validar | Cumple en los casos ejecutados; permisos y bucles reales pendientes |
-| RF-12 | Informe vacío y exclusiones, con interacción de código tres | Cumple en los escenarios ejecutados |
-| RF-13 | Continuación, causas en español y código tres | Parcial: el motivo incorrecto de V-9 altera el código esperado |
-| RF-14, RF-15 | Raíz oculta, opción de inclusión y atributo Windows real o fallido | Parcial: V-9 afecta la prioridad; otras plataformas pendientes |
-| RF-16 | Prueba real de raíz simbólica omitida | No verificado; la unión de directorio no la sustituye |
-| RNF-1 | Instalación sin dependencias de ejecución, vigilancia de conexiones y revisión | Cumple en los análisis ejecutados |
-| RNF-2 | Ambas versiones en Windows, rutas relativas/absolutas y otros alfabetos | **Falla: V-10**; Linux/macOS no verificados |
-| RNF-3 | Diagnósticos de uso, raíz y entradas con texto original extranjero | Cumple en los escenarios ejecutados; no corrige el motivo de V-9 |
+## Correcciones verificadas
 
-### Hallazgos abiertos de la copia parcial
+- **V-9, cerrado:** los fallos al consultar tipo o atributo ya no reemplazan `oculto` o `enlace` cuando esos motivos son conocidos. Entre fallos, se conserva la prioridad de permisos. Las subcarpetas identificadas en modo no recursivo siguen contando únicamente como encontradas. Las cinco regresiones comprueban también aviso, motivo único y código de salida.
+- **V-10, cerrado:** el CLI conserva la codificación de stdout/stderr y usa `backslashreplace` para caracteres no representables. Una ruta como `carpeta-á-Ж-資料` no interrumpe el informe bajo cp1252 ni ASCII; UTF-8 conserva los caracteres originales. El comportamiento técnico está descrito en plan y README.
+- Antes de corregir, las pruebas focalizadas dieron **20 fallidas, 22 superadas y 2 omitidas**: cuatro fallos de prioridad y dieciséis de codificación. Tras corregir se ejecutaron ambas suites completas y los mismos casos independientes que detectaron los defectos. Las correcciones no se presentan como una revisión externa de sí mismas.
 
-- **V-9 — Prioridad de exclusiones ante fallos, prioridad media.** En `filepilot/recorrido.py:128–147`, `is_dir()` puede fallar antes de aplicar la ocultación por nombre. Una entrada `.dato.txt` con permiso denegado al consultar el tipo se registra como `sin_permiso`, aunque RF-9 exige `oculto`. En Windows, un enlace ya reconocido cuyo atributo no puede consultarse también termina como `sin_permiso` en vez de conservar la prioridad de `enlace`. Ambos casos fallan en 3.11 y 3.14. Se deben conservar los motivos superiores conocidos sin romper la excepción de subcarpetas no recursivas de RF-4.
-- **V-10 — Fallo al emitir una ruta Unicode, prioridad media.** `filepilot/cli.py:188` imprime el informe sin tratar caracteres no representables. Con una raíz `carpeta-á-Ж-資料` y `PYTHONIOENCODING=cp1252`, ambas entradas y las cuatro combinaciones de opciones terminan con `UnicodeEncodeError` y código uno. Se debe permitir el análisis y emitir una salida segura, sin depender de que las pruebas impongan UTF-8.
-- **T14, verificación parcial.** El README existe y sus comandos de Windows se ejecutaron. Los comandos de Linux/macOS siguen sin comprobarse; no se da por satisfecha toda su condición de cierre.
+## Límites y siguiente paso
 
-**Veredicto de la copia parcial: no cumple.** No se integra el código ni se marcan T6 a T14 como completadas. La siguiente entrega debe corregir V-9 y V-10, conservar los comportamientos que pasan y repetir la revisión conjunta. La validación completa de plataformas y enlaces reales permanece pendiente.
+Las ocho omisiones son **siete pruebas de enlaces simbólicos** sin privilegio (`WinError 1314`) y **una de permisos reales** mediante `chmod`, no aplicable en Windows. Las tres pruebas del atributo oculto real pasan. Los fallos inyectados y la unión de directorio no sustituyen esas comprobaciones.
+
+Para cerrar la validación global: ejecutar el análisis y la suite en Linux y macOS con las versiones previstas, verificar enlaces/permisos reales en un entorno que permita preparar los casos y ejecutar los comandos POSIX del README para cerrar T14. No hay más comportamiento de producto por definir ni defectos de V-9/V-10 pendientes de implementación.
+
+## Evidencia anterior conservada
+
+- T1/T2: arranque fuera del proyecto por las dos entradas, metadatos sin dependencias de ejecución y errores de uso; control negativo del ejecutable en `27b02d5`.
+- T3: V-7 (bucle `RuntimeError`) y V-8 (ruta vacía) corregidos en `a11e72d`; 32 superadas/4 omitidas antes de T4 y 24/4 en la revisión de raíz con nueve casos adicionales. Sobre `8d40133`, 40 invocaciones con cp1252/UTF-8 y auditoría de raíz sin aperturas ni cambios; sobre `1ebccc3`, nueve comprobaciones adicionales. Recursos en `.sdd-check/t3-review-1788120184382/` y `.sdd-check/puente/filepilot-t3-t4-20260831/`.
+- T4/T5: fallos por módulo ausente antes de implementar; 60 pruebas de clasificación y 14/1 de recorrido, incluidos 30 niveles y pila iterativa. `077b0dc`: regresión integrada 106/5 en ambas versiones de Python.
+- Evaluación parcial documentada en `dcd9112`: 173/8 por versión, con V-9 y V-10 abiertos. Se conserva la copia original con huella `5bc2980703454f79b831faf28b451885f36ea1e7f3ce2dbb56984f3891220ba3` en `.sdd-check/puente/filepilot-t6-t14-20260831/`. Esa copia no representa la versión corregida actual.

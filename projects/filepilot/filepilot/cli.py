@@ -1,16 +1,24 @@
 """Entrada de línea de órdenes de FilePilot."""
 
 import argparse
-import errno
 import os
 import re
 import stat
 import sys
 from pathlib import Path
 
+from .informe import componer
+from .recorrido import (
+    BUCLE_DE_ENLACES,
+    MOTIVOS_DE_FALLO,
+    describir_fallo,
+    recorrer,
+)
+
 DESCRIPCION = "Analiza una carpeta y muestra la organización que propondría, sin modificar nada."
 CODIGO_USO_INCORRECTO = 1
 CODIGO_RUTA_INVALIDA = 2
+CODIGO_CON_OMISIONES = 3
 
 # `argparse` redacta sus diagnósticos en inglés; RNF-3 los exige en español.
 TRADUCCIONES = (
@@ -94,30 +102,6 @@ class RutaInvalida(Exception):
     """La ruta indicada no puede analizarse; su texto describe la causa (RF-11)."""
 
 
-BUCLE_DE_ENLACES = "demasiados enlaces simbólicos encadenados"
-
-# Causas en español a partir del código del fallo, no del idioma del sistema.
-FALLOS_CONOCIDOS = {
-    errno.EACCES: "permiso denegado",
-    errno.EPERM: "operación no permitida",
-    errno.ENOENT: "no existe",
-    errno.ENOTDIR: "no es un directorio",
-    errno.ELOOP: BUCLE_DE_ENLACES,
-    errno.ENAMETOOLONG: "el nombre es demasiado largo",
-    errno.EIO: "error de entrada y salida",
-}
-
-
-def describir_fallo(fallo: OSError) -> str:
-    """Describe en español la causa de un fallo del sistema de archivos."""
-    conocida = FALLOS_CONOCIDOS.get(fallo.errno)
-    if conocida:
-        return conocida
-    if fallo.errno is None:
-        return "error del sistema"
-    return f"error del sistema (código {fallo.errno})"
-
-
 def citar(ruta: str, destino: Path) -> str:
     """Cita la ruta tal como se indicó y, si es un enlace, también su destino."""
     if os.path.islink(ruta):
@@ -173,14 +157,40 @@ def resolver_raiz(ruta: str) -> Path:
 
 def main(argv: list[str] | None = None) -> int:
     """Punto de entrada. Devuelve el código de salida del proceso."""
+    # Conserva la codificación de la terminal; escapa lo que no pueda representar.
+    for salida in (sys.stdout, sys.stderr):
+        if hasattr(salida, "reconfigure"):
+            salida.reconfigure(errors="backslashreplace")
     analizador = crear_analizador()
     opciones = analizador.parse_args(argv)
 
     try:
-        resolver_raiz(opciones.ruta)
+        raiz = resolver_raiz(opciones.ruta)
     except RutaInvalida as problema:
         print(f"filepilot: error: {problema}", file=sys.stderr)
         return CODIGO_RUTA_INVALIDA
 
-    # T5 a T8 recorren la raíz resuelta y componen el informe.
+    try:
+        resultado = recorrer(raiz, opciones.recursivo, opciones.incluir_ocultos)
+    except OSError as fallo:
+        # RF-11: un fallo de la propia raíz se comunica con código dos, no como
+        # una interrupción sin tratar; los fallos por entrada siguen a RF-13.
+        print(
+            f"filepilot: error: no se puede leer la carpeta «{raiz}»: {describir_fallo(fallo)}",
+            file=sys.stderr,
+        )
+        return CODIGO_RUTA_INVALIDA
+
+    for omitida in resultado.omitidas:
+        # Solo las omisiones por fallo llevan detalle y merecen aviso (RF-13).
+        if omitida.detalle:
+            print(
+                f"filepilot: aviso: no se ha podido examinar «{omitida.ruta}»: {omitida.detalle}",
+                file=sys.stderr,
+            )
+
+    print(componer(raiz, resultado, opciones.recursivo))
+
+    if any(omitida.motivo in MOTIVOS_DE_FALLO for omitida in resultado.omitidas):
+        return CODIGO_CON_OMISIONES
     return 0
