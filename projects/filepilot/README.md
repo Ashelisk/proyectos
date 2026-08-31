@@ -8,7 +8,8 @@ sin cuentas ni servicios externos.
 
 ## Requisitos
 
-Python 3.11 o superior. La aplicación no necesita dependencias externas.
+Python 3.11 o superior. La aplicación no necesita dependencias externas. Las
+plataformas objetivo son Linux y Windows; no se contemplan otras.
 
 ## Instalación
 
@@ -95,8 +96,41 @@ pytest
 Algunas pruebas se omiten cuando el entorno no permite preparar su escenario:
 la creación de enlaces simbólicos sin el privilegio correspondiente, el atributo
 de oculto de Windows fuera de esa plataforma y la denegación real de permisos.
-Las plataformas y versiones en las que se ha ejecutado la suite se registran en
+`pytest -rs` muestra el motivo de cada omisión. Las plataformas y versiones en
+las que se ha ejecutado la suite se registran en
 [la validación de la funcionalidad](specs/001-analisis-carpeta/validation.md).
+
+### Estado de la verificación
+
+La suite se ha ejecutado en Windows 11, con Python 3.11.9 y con Python 3.14.7.
+En esas ejecuciones quedaron omitidas siete pruebas de enlaces
+simbólicos reales, por falta del privilegio para crearlos, y la de denegación de
+permisos mediante `chmod`, no aplicable en Windows.
+
+En Linux todavía no se ha ejecutado, de modo que su compatibilidad no está
+acreditada. Ejecutarla allí tampoco acredita los enlaces simbólicos reales en
+Windows: son comprobaciones de plataformas distintas.
+
+### Comprobación pendiente en Linux
+
+Con Bash, desde `projects/filepilot` y con un usuario sin privilegios de
+administrador —como `root` la denegación de permisos no puede reproducirse y esa
+prueba se omite—, repitiendo el bloque con Python 3.11 y con la última versión
+estable disponible, cada intérprete en su propio entorno virtual dentro de
+`.venv/`, que ya está excluido del control de versiones:
+
+```bash
+python3.11 -m venv .venv/linux-311
+source .venv/linux-311/bin/activate
+pip install -e ".[dev]"
+pytest -q -rs
+filepilot analizar filepilot --recursivo
+deactivate
+```
+
+Para la última estable, sustituir `python3.11` por su intérprete y
+`.venv/linux-311` por `.venv/linux-estable`. Conviene anotar, por versión, el
+recuento de pruebas superadas y omitidas y el motivo de cada omisión.
 
 ## Alcance
 

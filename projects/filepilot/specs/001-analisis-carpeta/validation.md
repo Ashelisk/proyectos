@@ -6,7 +6,7 @@
 
 ## Alcance y entorno
 
-Validación del 2026-08-31, base `dcd9112` más el código y las pruebas de esta entrega. Se contrastaron constitución, spec, clarificaciones, plan y tareas. El bloque recibido fue revisado independientemente; las correcciones posteriores y los documentos fueron autorrevisados. Queda disponible para un contraste externo adicional.
+Validación del 2026-08-31 sobre `deb833a`, con el mismo código y pruebas integrados en `a2ce1fa`. RNF-2 y la constitución fijan Linux y Windows como plataformas objetivo. Se contrastaron spec, clarificaciones, plan y tareas. El bloque recibido fue revisado independientemente; las correcciones posteriores y los documentos fueron autorrevisados. La reducción de plataformas no acredita las comprobaciones aún pendientes.
 
 Windows 11 AMD64, Python **3.11.9 y 3.14.7**, pytest 9.1.1. Instalaciones editables separadas: `.sdd-check/venvs/filepilot-311/` y `projects/filepilot/.venv/`; ambas importan el producto integrado. La versión 3.14 se conserva como predeterminada. No se añadieron dependencias de ejecución ni se modificaron requisitos para hacer pasar las pruebas.
 
@@ -16,22 +16,24 @@ Desde `projects/filepilot/`:
 
 ```powershell
 $env:PYTHONIOENCODING = 'utf-8'
-../../.sdd-check/venvs/filepilot-311/Scripts/python.exe -B -m pytest -q -p no:cacheprovider --basetemp ../../.sdd-check/cierre-final311
-.venv/Scripts/python.exe -B -m pytest -q -p no:cacheprovider --basetemp ../../.sdd-check/cierre-final314
+../../.sdd-check/venvs/filepilot-311/Scripts/python.exe -B -m pytest -q -rs -p no:cacheprovider --basetemp ../../.sdd-check/alcance-linux-windows-311
+.venv/Scripts/python.exe -B -m pytest -q -rs -p no:cacheprovider --basetemp ../../.sdd-check/alcance-linux-windows-314
 ```
 
 | Comprobación | Python 3.11.9 | Python 3.14.7 |
 | --- | --- | --- |
-| Suite integrada | **205 superadas, 8 omitidas**; 10,25 s | **205 superadas, 8 omitidas**; 10,87 s |
+| Suite integrada, repetida sobre `deb833a` | **205 superadas, 8 omitidas**; 8,96 s | **205 superadas, 8 omitidas**; 9,79 s |
 | Siete casos adicionales de la revisión anterior | 7 superados | 7 superados |
 | Módulo y ejecutable, cuatro combinaciones de opciones, UTF-8/cp1252 | 16 invocaciones correctas | 16 invocaciones correctas |
 | Auditoría independiente reutilizada sobre la versión corregida | Sin aperturas de contenido ni conexiones; árbol intacto | Sin aperturas de contenido ni conexiones; árbol intacto |
 
-La suite incluye 24 escenarios de salida redirigida: módulo y ejecutable, cuatro combinaciones de opciones y UTF-8/cp1252/ASCII, con una raíz de otros alfabetos. Cada subproceso configura su propia codificación; la captura UTF-8 del coordinador no oculta los fallos. Se comprueban la ruta emitida, el informe y el código cero.
+La suite incluye 24 escenarios de salida redirigida: módulo y ejecutable, cuatro combinaciones de opciones y UTF-8/cp1252/ASCII, con una raíz de otros alfabetos. Cada subproceso configura su propia codificación; la captura UTF-8 del coordinador no oculta los fallos. Se comprueban la ruta emitida, el informe y el código cero. Las filas de comprobaciones adicionales conservan la evidencia de la integración anterior; no se repitieron porque el código y las pruebas no cambiaron.
 
 Las comprobaciones adicionales están en `.sdd-check/puente/filepilot-t6-t14-20260831/test_revision_limites.py` y `revision_cli.py`. Se ejecutaron desde la raíz Git con cada intérprete del producto integrado. Sus resultados de CLI se conservan en `.sdd-check/cierre-cli311.json` y `cierre-cli314.json`. Estos archivos temporales no forman parte del paquete publicado; las regresiones permanentes están en `tests/`.
 
 Se verificó también una instalación nueva en `.sdd-check/readme-cierre/projects/filepilot/`: comandos de Windows del README, instalación normal y editable, ambas entradas y `pytest`. La suite dio **205 superadas y 8 omitidas** (17,25 s). `PYTEST_ADDOPTS` únicamente desactivó la caché y fijó el directorio temporal. Los comandos de Linux no se ejecutaron.
+
+La documentación de T14 se revisó e integró conservando los comandos de Windows. La guía de Linux usa entornos separados bajo `.venv/`, cuya exclusión de Git se comprobó, e identifica los comandos todavía no ejecutados. La revisión documental no cierra T14 ni acredita Linux. Código y pruebas permanecen sin cambios respecto a la versión ejecutada.
 
 ## Cumplimiento
 
@@ -64,7 +66,7 @@ Se verificó también una instalación nueva en `.sdd-check/readme-cierre/projec
 
 Las ocho omisiones son **siete pruebas de enlaces simbólicos** sin privilegio (`WinError 1314`) y **una de permisos reales** mediante `chmod`, no aplicable en Windows. Las tres pruebas del atributo oculto real pasan. Los fallos inyectados y la unión de directorio no sustituyen esas comprobaciones.
 
-Para cerrar la validación global: ejecutar el análisis y la suite en Linux con las versiones previstas, verificar enlaces/permisos reales en un entorno que permita preparar los casos y ejecutar los comandos POSIX del README para cerrar T14. No hay más comportamiento de producto por definir ni defectos de V-9/V-10 pendientes de implementación.
+Para completar la verificación en Linux: ejecutar el análisis y la suite con Python 3.11 y la última estable, usando un usuario sin privilegios para comprobar permisos reales; verificar enlaces y ejecutar los comandos Bash del README para cerrar T14. Registrar versiones, resultados y motivos de omisión. Para cerrar la compatibilidad global también deben verificarse los enlaces simbólicos en un Windows que permita crearlos: una prueba en Linux no acredita ese comportamiento en Windows. No hay más comportamiento de producto por definir ni defectos de V-9/V-10 pendientes de implementación.
 
 ## Evidencia anterior conservada
 
