@@ -2,11 +2,11 @@
 
 **V-9 y V-10 corregidos y verificados.** El análisis, las exclusiones y el informe están integrados. T1 a T13 cumplen sus condiciones dentro del alcance ejecutado; T14 conserva pendiente la ejecución de sus comandos de Linux.
 
-**Veredicto global: no concluyente.** No quedan defectos demostrados abiertos, pero faltan pruebas en Linux y comprobaciones reales de enlaces simbólicos y permisos. No se declara validada toda la compatibilidad de la spec.
+**Veredicto global: no concluyente.** No quedan defectos demostrados abiertos. Las pruebas de enlaces simbólicos reales pasan en Windows; faltan la ejecución en Linux, sus comprobaciones de permisos reales y los comandos de T14. No se declara validada toda la compatibilidad de la spec.
 
 ## Alcance y entorno
 
-Validación del 2026-08-31 sobre `deb833a`, con el mismo código y pruebas integrados en `a2ce1fa`. RNF-2 y la constitución fijan Linux y Windows como plataformas objetivo. Se contrastaron spec, clarificaciones, plan y tareas. El bloque recibido fue revisado independientemente; las correcciones posteriores y los documentos fueron autorrevisados. La reducción de plataformas no acredita las comprobaciones aún pendientes.
+Validación del 2026-08-31, base de referencia `f0e2e03`, con el mismo código y pruebas integrados en `a2ce1fa`. RNF-2 y la constitución fijan Linux y Windows como plataformas objetivo. Se contrastaron spec, clarificaciones, plan y tareas. El bloque recibido fue revisado independientemente; las correcciones posteriores y los documentos fueron autorrevisados. La ejecución elevada fue manual y sus informes JUnit se revisaron; no se presenta como una ejecución del coordinador. La reducción de plataformas no acredita las comprobaciones aún pendientes.
 
 Windows 11 AMD64, Python **3.11.9 y 3.14.7**, pytest 9.1.1. Instalaciones editables separadas: `.sdd-check/venvs/filepilot-311/` y `projects/filepilot/.venv/`; ambas importan el producto integrado. La versión 3.14 se conserva como predeterminada. No se añadieron dependencias de ejecución ni se modificaron requisitos para hacer pasar las pruebas.
 
@@ -20,12 +20,23 @@ $env:PYTHONIOENCODING = 'utf-8'
 .venv/Scripts/python.exe -B -m pytest -q -rs -p no:cacheprovider --basetemp ../../.sdd-check/alcance-linux-windows-314
 ```
 
+Ejecución manual posterior desde la misma carpeta, en PowerShell como administrador:
+
+```powershell
+$env:PYTHONIOENCODING = 'utf-8'
+& ../../.sdd-check/venvs/filepilot-311/Scripts/python.exe -B -m pytest -q -rs -p no:cacheprovider --junitxml=../../.sdd-check/windows-admin-311.xml
+& .venv/Scripts/python.exe -B -m pytest -q -rs -p no:cacheprovider --junitxml=../../.sdd-check/windows-admin-314.xml
+```
+
 | Comprobación | Python 3.11.9 | Python 3.14.7 |
 | --- | --- | --- |
+| Suite con privilegios para crear enlaces, informes JUnit revisados | **212 superadas, 1 omitida**; 5,300 s | **212 superadas, 1 omitida**; 5,812 s |
 | Suite integrada, repetida sobre `deb833a` | **205 superadas, 8 omitidas**; 8,96 s | **205 superadas, 8 omitidas**; 9,79 s |
 | Siete casos adicionales de la revisión anterior | 7 superados | 7 superados |
 | Módulo y ejecutable, cuatro combinaciones de opciones, UTF-8/cp1252 | 16 invocaciones correctas | 16 invocaciones correctas |
 | Auditoría independiente reutilizada sobre la versión corregida | Sin aperturas de contenido ni conexiones; árbol intacto | Sin aperturas de contenido ni conexiones; árbol intacto |
+
+Los informes `.sdd-check/windows-admin-311.xml` y `windows-admin-314.xml`, iniciados a las 19:57:10 y 19:57:16 (+02:00), contienen 213 casos cada uno, cero fallos, cero errores y una omisión. Se comprobó individualmente que pasan los siete casos antes omitidos: enlaces visibles y ocultos, raíz enlazada resuelta y analizada por módulo e integración, enlace roto y exclusión de enlaces durante el recorrido. La única omisión es `test_carpeta_sin_permiso_termina_en_dos`: `chmod no restringe la lectura en Windows`.
 
 La suite incluye 24 escenarios de salida redirigida: módulo y ejecutable, cuatro combinaciones de opciones y UTF-8/cp1252/ASCII, con una raíz de otros alfabetos. Cada subproceso configura su propia codificación; la captura UTF-8 del coordinador no oculta los fallos. Se comprueban la ruta emitida, el informe y el código cero. Las filas de comprobaciones adicionales conservan la evidencia de la integración anterior; no se repitieron porque el código y las pruebas no cambiaron.
 
@@ -41,17 +52,17 @@ La documentación de T14 se revisó e integró conservando los comandos de Windo
 | --- | --- | --- | --- |
 | RF-1 | Informes completos por módulo y ejecutable | Cumple | Entornos ejecutados |
 | RF-2 | Ayudas y errores de uso en `test_cli.py` | Cumple | Los encabezados ingleses de la ayuda no están prohibidos |
-| RF-3, RF-4 | Árboles reales, dos modos, recuentos y poda | Cumple | Enlaces reales omitidos |
+| RF-3, RF-4 | Árboles reales, dos modos, recuentos y poda | Cumple en Windows | Linux pendiente |
 | RF-5, RF-6 | 46 extensiones, mayúsculas, última extensión y grupo sin extensión | Cumple | Mapa sin cambios |
 | RF-7, RF-8 | Tabla, tamaños, destinos planos y cinco extensiones con desempate | Cumple | Salida restrictiva comprobada con escapes |
-| RF-9 | Recuentos y prioridad, incluidos fallos de tipo y atributo | Cumple | Enlaces simulados complementan los reales omitidos |
+| RF-9 | Recuentos, prioridad y enlaces visibles/ocultos reales | Cumple en Windows | Fallos de metadatos inyectados; Linux pendiente |
 | RF-10 | Instantáneas, ausencia de carpetas propuestas y auditoría `open` aislada | Cumple | Árboles y modos ejecutados |
-| RF-11 | Regresión de raíz y fallos durante su enumeración tras validar | Cumple, parcial | Permisos y bucles reales no verificados |
+| RF-11 | Regresión de raíz, enlace roto real y fallos al enumerar | Cumple, parcial | Permisos reales pendientes en Linux; bucles con fallos controlados |
 | RF-12 | Tres escenarios vacíos en subproceso y ausencia de archivos con error | Cumple | Conserva cero o tres según los motivos |
 | RF-13 | Fallos inyectados, continuación, causa española y código tres | Cumple | No acredita permisos reales |
-| RF-14 | Raíz oculta, poda, inclusión y demás exclusiones vigentes | Cumple, parcial | Raíz simbólica real pendiente |
+| RF-14 | Raíz oculta, poda, inclusión y raíz simbólica real | Cumple en Windows | Linux pendiente |
 | RF-15 | Tres pruebas con atributo Windows real y fallos controlados | Cumple en Windows | Linux no ejecutado |
-| RF-16 | Pruebas reales omitidas; unión de directorio resuelta | No verificado | La unión no sustituye al enlace simbólico |
+| RF-16 | Raíz simbólica real resuelta y analizada por módulo e integración | Cumple en Windows | Linux pendiente |
 | RNF-1 | Sin dependencias de ejecución; vigilancia de intentos y eventos de red | Cumple | Análisis ejecutados |
 | RNF-2 | Ambas versiones, rutas relativas/absolutas y Unicode | Cumple, parcial | Linux pendiente |
 | RNF-3 | Uso, raíz y avisos con errores cuyo texto original está en otro idioma | Cumple | Causas derivadas del tipo y código, no del texto del sistema |
@@ -64,9 +75,9 @@ La documentación de T14 se revisó e integró conservando los comandos de Windo
 
 ## Límites y siguiente paso
 
-Las ocho omisiones son **siete pruebas de enlaces simbólicos** sin privilegio (`WinError 1314`) y **una de permisos reales** mediante `chmod`, no aplicable en Windows. Las tres pruebas del atributo oculto real pasan. Los fallos inyectados y la unión de directorio no sustituyen esas comprobaciones.
+La ejecución elevada cierra las siete omisiones de enlaces simbólicos en Windows. Permanece **una omisión de permisos reales mediante `chmod`**, no aplicable en Windows. Las tres pruebas del atributo oculto real también pasan. La evidencia elevada complementa la ejecución sin privilegios; no exige usar FilePilot como administrador ni sustituye las pruebas de permisos en Linux.
 
-Para completar la verificación en Linux: ejecutar el análisis y la suite con Python 3.11 y la última estable, usando un usuario sin privilegios para comprobar permisos reales; verificar enlaces y ejecutar los comandos Bash del README para cerrar T14. Registrar versiones, resultados y motivos de omisión. Para cerrar la compatibilidad global también deben verificarse los enlaces simbólicos en un Windows que permita crearlos: una prueba en Linux no acredita ese comportamiento en Windows. No hay más comportamiento de producto por definir ni defectos de V-9/V-10 pendientes de implementación.
+Para completar la verificación en Linux: ejecutar el análisis y la suite con Python 3.11 y la última estable, usando un usuario sin privilegios para comprobar permisos reales; verificar enlaces y ejecutar los comandos Bash del README para cerrar T14. Registrar versiones, resultados y motivos de omisión. No hay más comportamiento de producto por definir ni defectos de V-9/V-10 pendientes de implementación.
 
 ## Evidencia anterior conservada
 

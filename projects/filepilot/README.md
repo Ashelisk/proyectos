@@ -103,13 +103,14 @@ las que se ha ejecutado la suite se registran en
 ### Estado de la verificación
 
 La suite se ha ejecutado en Windows 11, con Python 3.11.9 y con Python 3.14.7.
-En esas ejecuciones quedaron omitidas siete pruebas de enlaces
-simbólicos reales, por falta del privilegio para crearlos, y la de denegación de
-permisos mediante `chmod`, no aplicable en Windows.
+Con privilegios para crear enlaces simbólicos, cada ejecución registra **212
+pruebas superadas y una omitida**: la de denegación de permisos mediante `chmod`,
+no aplicable en Windows. Las siete pruebas de enlaces reales pasan; preparar
+esos casos requiere el privilegio correspondiente, pero el uso normal de
+FilePilot no requiere ejecutar como administrador.
 
 En Linux todavía no se ha ejecutado, de modo que su compatibilidad no está
-acreditada. Ejecutarla allí tampoco acredita los enlaces simbólicos reales en
-Windows: son comprobaciones de plataformas distintas.
+acreditada.
 
 ### Comprobación pendiente en Linux
 
