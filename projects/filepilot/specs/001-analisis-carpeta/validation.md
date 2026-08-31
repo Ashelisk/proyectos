@@ -1,10 +1,12 @@
-# Validación — T1 a T5: arranque, raíz, clasificación y recorrido
+# Validación — FilePilot, especificación 001
 
-**Veredicto: T5 cumple sus condiciones de cierre en el entorno ejecutado.** T1 a T4 no presentan regresiones. T6 es la siguiente tarea y no se ha iniciado. El recorrido es un módulo interno: las exclusiones completas, los fallos por entrada y su integración con el CLI y el informe siguen pendientes.
+**Versión integrada: T1 a T5 verificadas en el entorno ejecutado.** T1 a T4 no presentan regresiones. El recorrido integrado es un módulo interno: las exclusiones completas, los fallos por entrada y su integración con el CLI y el informe siguen pendientes.
+
+**Última evaluación: la implementación parcial de T6 a T14 no cumple y no se ha integrado.** Presenta fallos de prioridad de exclusiones y de salida Unicode, detallados al final. Esta evaluación no modifica el resultado ni las casillas de las tareas ya integradas.
 
 ## Alcance y entorno
 
-Revisión y ejecución independiente del código de programación, el 2026-08-31: base `130dabf` más `recorrido.py` y `test_recorrido.py` incluidos en este commit. Se contrastaron constitución, spec, clarificaciones, plan y tareas. El coordinador actualizó y autorrevisó los documentos; el código integrado coincide con la entrega aprobada del puente.
+Revisión y ejecución independiente del código de programación, el 2026-08-31: base `130dabf` más `recorrido.py` y `test_recorrido.py`, integrados en `077b0dc`. Se contrastaron constitución, spec, clarificaciones, plan y tareas. El coordinador actualizó y autorrevisó los documentos; el código integrado coincide con la entrega aprobada del puente.
 
 Windows 11 AMD64, **Python 3.11.9 y 3.14.7**, con pytest 9.1.1 en ambos entornos. Python 3.11.9 se instaló mediante el gestor oficial, que verificó la firma del índice de distribución; 3.14.7 se conservó como predeterminada. Se usaron instalaciones editables separadas: `.sdd-check/venvs/filepilot-311/` para 3.11 y `projects/filepilot/.venv/` para 3.14. El worktree tuvo además su propio entorno 3.11, comprobando que importaba su propio paquete. No se cambió la versión mínima del producto.
 
@@ -61,4 +63,55 @@ El puente utilizó dos envíos de Opus 5 en la misma sesión: esfuerzo `high` pa
 
 Se conserva como evidencia anterior, no repetida aquí: sobre `8d40133`, 40 invocaciones por ambas entradas con cp1252 y UTF-8 y una auditoría aislada de la raíz sin aperturas de contenido ni cambios del árbol (`.sdd-check/t3-review-1788120184382/`); sobre `1ebccc3`, nueve comprobaciones adicionales de errores de raíz y su rechazo temprano de cadena vacía (`.sdd-check/puente/filepilot-t3-t4-20260831/`). El control negativo del ejecutable de T1 se verificó en `27b02d5`. La evidencia de T4 incluye el fallo previo a implementar y sus 60 pruebas en memoria. Ninguna de estas comprobaciones acredita el futuro análisis completo.
 
-**Sin hallazgos abiertos que bloqueen T6.** T12 continúa pendiente: ejecutar la suite actual en Windows 3.11 no equivale a verificar todas las plataformas ni el producto terminado.
+**La versión integrada permite iniciar T6.** T12 continúa pendiente: ejecutar la suite de T1 a T5 en Windows 3.11 no equivale a verificar todas las plataformas ni el producto terminado.
+
+## Evaluación parcial de T6 a T14, sin integrar
+
+Revisión independiente del 2026-08-31 sobre la base `077b0dc`, en una copia aislada. La versión evaluada incluye cambios de clasificación, CLI y recorrido, el informe, pruebas y el README del producto. Huella SHA-256 del conjunto de cambios: `5bc2980703454f79b831faf28b451885f36ea1e7f3ce2dbb56984f3891220ba3`. La copia y las comprobaciones adicionales se conservan localmente en `.sdd-check/puente/filepilot-t6-t14-20260831/`; no forman parte del código publicado.
+
+| Comprobación | Python 3.11.9 | Python 3.14.7 |
+| --- | --- | --- |
+| Suite completa en Windows 11, pytest 9.1.1 | 173 superadas, 8 omitidas; 5,87 s | 173 superadas, 8 omitidas; 6,23 s |
+| Siete casos adicionales de fallos y prioridad | 5 superados, 2 fallidos | 5 superados, 2 fallidos |
+| Módulo y ejecutable, cuatro combinaciones de opciones, UTF-8 y cp1252 | 8 correctos en UTF-8, 8 fallidos en cp1252 | 8 correctos en UTF-8, 8 fallidos en cp1252 |
+| Auditoría independiente en proceso aislado | Sin aperturas de contenido ni conexiones; árbol intacto | Sin aperturas de contenido ni conexiones; árbol intacto |
+
+Las ocho omisiones corresponden a siete pruebas de enlaces simbólicos sin privilegio y una de permisos reales mediante `chmod`, no aplicable en Windows. Las tres pruebas con atributo oculto real de Windows pasan. Linux y macOS no se ejecutaron; las simulaciones no sustituyen esos entornos ni los enlaces reales.
+
+Comandos desde `worktree/projects/filepilot/` de la copia local; para 3.14 se sustituyó `.venv/Scripts/python.exe` por `../../../venv314/Scripts/python.exe` y cada directorio temporal terminó en `314`:
+
+```powershell
+$env:PYTHONIOENCODING = 'utf-8'
+.venv/Scripts/python.exe -B -m pytest -q -rs -p no:cacheprovider --basetemp ../../../bloque-revision311
+.venv/Scripts/python.exe -B -m pytest ../../../test_revision_limites.py -q -p no:cacheprovider --basetemp ../../../limites311
+.venv/Scripts/python.exe -B ../../../revision_cli.py
+```
+
+`revision_cli.py` establece UTF-8 o cp1252 por subproceso; el ajuste del proceso coordinador no oculta el fallo de codificación. Compara rutas, tamaños y fechas antes y después de cada análisis y registra aperturas y conexiones únicamente durante la llamada al CLI.
+
+Se ejecutaron también los comandos de Windows del README: creación y activación de `.venv`, `pip install .`, ambas entradas de análisis, `pip install -e ".[dev]"` y `pytest`. Esta última ejecución dio 173 superadas y 8 omitidas (5,16 s), con `PYTEST_ADDOPTS` para desactivar la caché y fijar un directorio temporal aislado. Los comandos de Linux/macOS no se ejecutaron. Se retiró exclusivamente el directorio `build/` generado por esta comprobación y se confirmó la misma huella de código.
+
+| Requisito | Evidencia de la copia parcial | Resultado y límite |
+| --- | --- | --- |
+| RF-1, RF-2 | CLI integrado, ayudas, uso incorrecto y ambas entradas | Cumple en los escenarios ejecutados; salida restringida afectada por V-10 |
+| RF-3, RF-4 | Primer nivel, recursión, poda y recuentos de subcarpetas | Cumple en los escenarios ejecutados |
+| RF-5, RF-6 | Regresión del mapa completo y grupo sin extensión | Cumple; mapa conservado |
+| RF-7, RF-8 | Filas, tamaños, destinos en la raíz y cinco extensiones con desempate | Cumple en UTF-8; emisión afectada por V-10 |
+| RF-9 | Motivo único y pruebas adicionales de prioridad con fallos | **Falla: V-9** |
+| RF-10 | Instantáneas y auditorías aisladas, incluida comprobación independiente | Cumple en los árboles y modos ejecutados |
+| RF-11 | Regresión y fallos de raíz durante la enumeración posterior a validar | Cumple en los casos ejecutados; permisos y bucles reales pendientes |
+| RF-12 | Informe vacío y exclusiones, con interacción de código tres | Cumple en los escenarios ejecutados |
+| RF-13 | Continuación, causas en español y código tres | Parcial: el motivo incorrecto de V-9 altera el código esperado |
+| RF-14, RF-15 | Raíz oculta, opción de inclusión y atributo Windows real o fallido | Parcial: V-9 afecta la prioridad; otras plataformas pendientes |
+| RF-16 | Prueba real de raíz simbólica omitida | No verificado; la unión de directorio no la sustituye |
+| RNF-1 | Instalación sin dependencias de ejecución, vigilancia de conexiones y revisión | Cumple en los análisis ejecutados |
+| RNF-2 | Ambas versiones en Windows, rutas relativas/absolutas y otros alfabetos | **Falla: V-10**; Linux/macOS no verificados |
+| RNF-3 | Diagnósticos de uso, raíz y entradas con texto original extranjero | Cumple en los escenarios ejecutados; no corrige el motivo de V-9 |
+
+### Hallazgos abiertos de la copia parcial
+
+- **V-9 — Prioridad de exclusiones ante fallos, prioridad media.** En `filepilot/recorrido.py:128–147`, `is_dir()` puede fallar antes de aplicar la ocultación por nombre. Una entrada `.dato.txt` con permiso denegado al consultar el tipo se registra como `sin_permiso`, aunque RF-9 exige `oculto`. En Windows, un enlace ya reconocido cuyo atributo no puede consultarse también termina como `sin_permiso` en vez de conservar la prioridad de `enlace`. Ambos casos fallan en 3.11 y 3.14. Se deben conservar los motivos superiores conocidos sin romper la excepción de subcarpetas no recursivas de RF-4.
+- **V-10 — Fallo al emitir una ruta Unicode, prioridad media.** `filepilot/cli.py:188` imprime el informe sin tratar caracteres no representables. Con una raíz `carpeta-á-Ж-資料` y `PYTHONIOENCODING=cp1252`, ambas entradas y las cuatro combinaciones de opciones terminan con `UnicodeEncodeError` y código uno. Se debe permitir el análisis y emitir una salida segura, sin depender de que las pruebas impongan UTF-8.
+- **T14, verificación parcial.** El README existe y sus comandos de Windows se ejecutaron. Los comandos de Linux/macOS siguen sin comprobarse; no se da por satisfecha toda su condición de cierre.
+
+**Veredicto de la copia parcial: no cumple.** No se integra el código ni se marcan T6 a T14 como completadas. La siguiente entrega debe corregir V-9 y V-10, conservar los comportamientos que pasan y repetir la revisión conjunta. La validación completa de plataformas y enlaces reales permanece pendiente.

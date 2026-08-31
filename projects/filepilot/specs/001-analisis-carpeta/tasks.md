@@ -56,6 +56,8 @@ RF-1 (T8, T13), RF-2 (T2), RF-3 (T5), RF-4 (T5, T6), RF-5 (T4), RF-6 (T4), RF-7 
 
 T1 a T5 completadas y verificadas dentro del alcance ejecutado. **Siguiente tarea: T6**, con su dependencia T5 satisfecha y sin bloqueos. T6 a T14 permanecen pendientes; el recorrido interno todavía no está integrado en el CLI y no se genera el informe.
 
+Existe una implementación parcial de T6 a T14 en una copia aislada, sin integrar. La [evaluación conjunta](validation.md#evaluación-parcial-de-t6-a-t14-sin-integrar) detecta V-9 (prioridad de exclusiones) y V-10 (salida Unicode), aunque su suite pasa 173 pruebas con ocho omisiones en ambas versiones de Python verificadas en Windows. Ninguna tarea adicional se da por completada.
+
 Quedan fuera de estas tareas los comportamientos excluidos por la spec: mover u organizar archivos, conflictos de nombre, duplicados, reglas configurables, salida en JSON y deshacer.
 
 Ninguna casilla se marca sin evidencia ejecutada; la validación posterior contrastará cada requisito con resultados reales.
