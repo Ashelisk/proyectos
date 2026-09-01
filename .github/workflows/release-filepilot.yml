@@ -13,13 +13,22 @@ on:
       - ".github/workflows/release-filepilot.yml"
       - "LICENSE"
       - "projects/filepilot/**"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Etiqueta existente que se debe construir y publicar
+        required: true
+        default: v0.1.0
+
+env:
+  FILEPILOT_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
 
 permissions:
   contents: read
 
 concurrency:
-  group: filepilot-release-${{ github.ref }}
-  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+  group: filepilot-release-${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' && !startsWith(github.ref, 'refs/tags/') }}
 
 jobs:
   windows:
@@ -30,14 +39,16 @@ jobs:
         working-directory: projects/filepilot
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
       - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
       - name: Instalar herramientas aisladas de la aplicación
         run: python -m pip install -e ".[dev,release]"
       - name: Verificar versión de la etiqueta
-        if: startsWith(github.ref, 'refs/tags/')
-        run: python tools/release.py validar-version --tag "${{ github.ref_name }}"
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        run: python tools/release.py validar-version --tag "${{ env.FILEPILOT_TAG }}"
       - name: Ejecutar pruebas
         run: python -m pytest -q -rs
       - name: Construir ejecutable
@@ -66,14 +77,16 @@ jobs:
         working-directory: projects/filepilot
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
       - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
       - name: Instalar herramientas aisladas de la aplicación
         run: python -m pip install -e ".[dev,release]"
       - name: Verificar versión de la etiqueta
-        if: startsWith(github.ref, 'refs/tags/')
-        run: python tools/release.py validar-version --tag "${{ github.ref_name }}"
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        run: python tools/release.py validar-version --tag "${{ env.FILEPILOT_TAG }}"
       - name: Ejecutar pruebas
         run: python -m pytest -q -rs
       - name: Construir ejecutable
@@ -102,14 +115,16 @@ jobs:
         working-directory: projects/filepilot
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
       - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
       - name: Instalar herramientas de construcción
         run: python -m pip install ".[dev,release]"
       - name: Verificar versión de la etiqueta
-        if: startsWith(github.ref, 'refs/tags/')
-        run: python tools/release.py validar-version --tag "${{ github.ref_name }}"
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        run: python tools/release.py validar-version --tag "${{ env.FILEPILOT_TAG }}"
       - name: Construir y verificar wheel
         run: |
           version=$(python tools/release.py mostrar-version)
@@ -130,13 +145,15 @@ jobs:
 
   release:
     name: Publicar release verificada
-    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
     needs: [windows, linux, wheel]
     runs-on: ubuntu-22.04
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
       - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
@@ -148,7 +165,7 @@ jobs:
       - name: Validar entrega completa
         run: |
           version=$(python projects/filepilot/tools/release.py mostrar-version)
-          python projects/filepilot/tools/release.py validar-version --tag "$GITHUB_REF_NAME"
+          python projects/filepilot/tools/release.py validar-version --tag "${{ env.FILEPILOT_TAG }}"
           python projects/filepilot/tools/release.py verificar-archivo --plataforma windows --archivo "release-assets/filepilot-v${version}-windows-x64.zip"
           python projects/filepilot/tools/release.py verificar-archivo --plataforma linux --archivo "release-assets/filepilot-v${version}-linux-x86_64.tar.gz"
           python projects/filepilot/tools/release.py verificar-wheel --archivo "release-assets/filepilot-${version}-py3-none-any.whl"
@@ -158,11 +175,12 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            echo "Ya existe una release para $GITHUB_REF_NAME"
+          existing=$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" --jq ".[] | select(.tag_name == \"$FILEPILOT_TAG\") | .id" | head -n 1)
+          if test -n "$existing"; then
+            echo "Ya existe una release para $FILEPILOT_TAG"
             exit 1
           fi
-          gh release create "$GITHUB_REF_NAME" release-assets/* --repo "$GITHUB_REPOSITORY" --draft --verify-tag --generate-notes --title "FilePilot $GITHUB_REF_NAME"
+          gh release create "$FILEPILOT_TAG" release-assets/* --repo "$GITHUB_REPOSITORY" --draft --verify-tag --generate-notes --title "FilePilot $FILEPILOT_TAG"
       - name: Verificar y publicar el borrador
         env:
           GH_TOKEN: ${{ github.token }}
@@ -173,6 +191,8 @@ jobs:
             "filepilot-${version}-py3-none-any.whl" \
             "filepilot-v${version}-linux-x86_64.tar.gz" \
             "filepilot-v${version}-windows-x64.zip")
-          actual=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$GITHUB_REF_NAME" --jq '.assets[].name' | sort)
+          release_id=$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" --jq ".[] | select(.tag_name == \"$FILEPILOT_TAG\" and .draft == true) | .id" | head -n 1)
+          test -n "$release_id"
+          actual=$(gh api "repos/$GITHUB_REPOSITORY/releases/$release_id/assets" --jq '.[].name' | sort)
           test "$actual" = "$expected"
-          gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false
+          gh api --method PATCH "repos/$GITHUB_REPOSITORY/releases/$release_id" -F draft=false >/dev/null

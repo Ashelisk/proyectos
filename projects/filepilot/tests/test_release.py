@@ -9,6 +9,7 @@ import pytest
 
 
 RUTA_HELPER = Path(__file__).parents[1] / "tools" / "release.py"
+RUTA_WORKFLOW = Path(__file__).parents[3] / ".github" / "workflows" / "release-filepilot.yml"
 SPEC = importlib.util.spec_from_file_location("filepilot_release", RUTA_HELPER)
 release = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None
@@ -102,3 +103,14 @@ def test_sumas_rechazan_artefactos_adicionales(tmp_path: Path) -> None:
 
     with pytest.raises(release.ReleaseError):
         release.write_checksums(tmp_path)
+
+
+def test_workflow_verifica_el_borrador_por_id_antes_de_publicarlo() -> None:
+    workflow = RUTA_WORKFLOW.read_text(encoding="utf-8")
+    consulta = 'releases/$release_id/assets'
+    publicacion = 'releases/$release_id" -F draft=false'
+
+    assert consulta in workflow
+    assert publicacion in workflow
+    assert workflow.index(consulta) < workflow.index(publicacion)
+    assert "releases/tags/$GITHUB_REF_NAME" not in workflow
