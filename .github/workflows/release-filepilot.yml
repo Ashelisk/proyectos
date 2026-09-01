@@ -1,0 +1,178 @@
+name: Distribución de FilePilot
+
+on:
+  push:
+    branches: [main, "feat/**", "fix/**"]
+    tags: ["v*.*.*"]
+    paths:
+      - ".github/workflows/release-filepilot.yml"
+      - "LICENSE"
+      - "projects/filepilot/**"
+  pull_request:
+    paths:
+      - ".github/workflows/release-filepilot.yml"
+      - "LICENSE"
+      - "projects/filepilot/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: filepilot-release-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+jobs:
+  windows:
+    name: Ejecutable · Windows 10/11 x64
+    runs-on: windows-2022
+    defaults:
+      run:
+        working-directory: projects/filepilot
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Instalar herramientas aisladas de la aplicación
+        run: python -m pip install -e ".[dev,release]"
+      - name: Verificar versión de la etiqueta
+        if: startsWith(github.ref, 'refs/tags/')
+        run: python tools/release.py validar-version --tag "${{ github.ref_name }}"
+      - name: Ejecutar pruebas
+        run: python -m pytest -q -rs
+      - name: Construir ejecutable
+        run: >-
+          python -m PyInstaller --clean --noconfirm --onefile --name filepilot
+          --distpath "${{ runner.temp }}/filepilot-dist"
+          --workpath "${{ runner.temp }}/filepilot-build"
+          --specpath "${{ runner.temp }}/filepilot-spec"
+          tools/filepilot_entry.py
+      - name: Verificar y empaquetar
+        run: |
+          python tools/release.py verificar-ejecutable --ejecutable "${{ runner.temp }}/filepilot-dist/filepilot.exe"
+          python tools/release.py empaquetar --plataforma windows --ejecutable "${{ runner.temp }}/filepilot-dist/filepilot.exe" --salida "${{ runner.temp }}/filepilot-assets"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: filepilot-windows
+          path: ${{ runner.temp }}/filepilot-assets/filepilot-v*-windows-x64.zip
+          if-no-files-found: error
+          retention-days: 7
+
+  linux:
+    name: Ejecutable · Linux x86_64
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: projects/filepilot
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Instalar herramientas aisladas de la aplicación
+        run: python -m pip install -e ".[dev,release]"
+      - name: Verificar versión de la etiqueta
+        if: startsWith(github.ref, 'refs/tags/')
+        run: python tools/release.py validar-version --tag "${{ github.ref_name }}"
+      - name: Ejecutar pruebas
+        run: python -m pytest -q -rs
+      - name: Construir ejecutable
+        run: >-
+          python -m PyInstaller --clean --noconfirm --onefile --name filepilot
+          --distpath "${{ runner.temp }}/filepilot-dist"
+          --workpath "${{ runner.temp }}/filepilot-build"
+          --specpath "${{ runner.temp }}/filepilot-spec"
+          tools/filepilot_entry.py
+      - name: Verificar y empaquetar
+        run: |
+          python tools/release.py verificar-ejecutable --ejecutable "${{ runner.temp }}/filepilot-dist/filepilot"
+          python tools/release.py empaquetar --plataforma linux --ejecutable "${{ runner.temp }}/filepilot-dist/filepilot" --salida "${{ runner.temp }}/filepilot-assets"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: filepilot-linux
+          path: ${{ runner.temp }}/filepilot-assets/filepilot-v*-linux-x86_64.tar.gz
+          if-no-files-found: error
+          retention-days: 7
+
+  wheel:
+    name: Wheel · Python 3.11+
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: projects/filepilot
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - name: Instalar herramientas de construcción
+        run: python -m pip install ".[dev,release]"
+      - name: Verificar versión de la etiqueta
+        if: startsWith(github.ref, 'refs/tags/')
+        run: python tools/release.py validar-version --tag "${{ github.ref_name }}"
+      - name: Construir y verificar wheel
+        run: |
+          version=$(python tools/release.py mostrar-version)
+          wheel="${{ runner.temp }}/filepilot-wheel/filepilot-${version}-py3-none-any.whl"
+          python -m build --wheel --no-isolation --outdir "${{ runner.temp }}/filepilot-wheel"
+          python tools/release.py verificar-wheel --archivo "$wheel"
+          python -m venv "${{ runner.temp }}/filepilot-clean"
+          "${{ runner.temp }}/filepilot-clean/bin/python" -m pip install --no-deps "$wheel"
+          cd "${{ runner.temp }}"
+          "${{ runner.temp }}/filepilot-clean/bin/python" -m filepilot --help
+          "${{ runner.temp }}/filepilot-clean/bin/filepilot" --help
+      - uses: actions/upload-artifact@v7
+        with:
+          name: filepilot-wheel
+          path: ${{ runner.temp }}/filepilot-wheel/filepilot-*-py3-none-any.whl
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    name: Publicar release verificada
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [windows, linux, wheel]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: filepilot-*
+          merge-multiple: true
+          path: release-assets
+      - name: Validar entrega completa
+        run: |
+          version=$(python projects/filepilot/tools/release.py mostrar-version)
+          python projects/filepilot/tools/release.py validar-version --tag "$GITHUB_REF_NAME"
+          python projects/filepilot/tools/release.py verificar-archivo --plataforma windows --archivo "release-assets/filepilot-v${version}-windows-x64.zip"
+          python projects/filepilot/tools/release.py verificar-archivo --plataforma linux --archivo "release-assets/filepilot-v${version}-linux-x86_64.tar.gz"
+          python projects/filepilot/tools/release.py verificar-wheel --archivo "release-assets/filepilot-${version}-py3-none-any.whl"
+          python projects/filepilot/tools/release.py sumas --directorio release-assets
+          python projects/filepilot/tools/release.py verificar-sumas --directorio release-assets
+      - name: Crear borrador sin sobrescribir releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Ya existe una release para $GITHUB_REF_NAME"
+            exit 1
+          fi
+          gh release create "$GITHUB_REF_NAME" release-assets/* --repo "$GITHUB_REPOSITORY" --draft --verify-tag --generate-notes --title "FilePilot $GITHUB_REF_NAME"
+      - name: Verificar y publicar el borrador
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(python projects/filepilot/tools/release.py mostrar-version)
+          expected=$(printf '%s\n' \
+            "SHA256SUMS.txt" \
+            "filepilot-${version}-py3-none-any.whl" \
+            "filepilot-v${version}-linux-x86_64.tar.gz" \
+            "filepilot-v${version}-windows-x64.zip")
+          actual=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$GITHUB_REF_NAME" --jq '.assets[].name' | sort)
+          test "$actual" = "$expected"
+          gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false
