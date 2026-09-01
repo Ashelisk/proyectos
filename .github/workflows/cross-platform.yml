@@ -19,6 +19,9 @@ jobs:
         python: ["3.11", "3.x"]
     steps:
       - uses: actions/checkout@v7
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+          ref: ${{ github.head_ref || github.ref_name }}
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
