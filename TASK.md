@@ -2,7 +2,7 @@
 
 - **Objetivo:** distribuir FilePilot como ejecutable independiente para Windows x64 y Linux x86_64, con wheel, sumas SHA-256 y GitHub Release automática.
 - **Rama:** `feat/filepilot-distribucion`
-- **Estado:** `IN_PROGRESS` — especificación, clarificación, plan y tareas preparados; comienza T1.
+- **Estado:** `IN_PROGRESS` — T1 a T5 completadas; falta publicar y validar `v0.1.0`.
 - **Identificador:** `filepilot-distribucion`
 
 ## Criterios de aceptación
@@ -15,14 +15,14 @@
 
 ## Pendiente
 
-- Ejecutar T1 a T6 de `projects/filepilot/specs/002-distribucion/tasks.md`.
+- Ejecutar T6 de `projects/filepilot/specs/002-distribucion/tasks.md`.
 
 ## Resultados por plataforma
 
-- **Linux:** `PENDING`; falta construir y probar el ejecutable independiente.
-- **Windows:** `PENDING`; falta construir y probar el ejecutable independiente.
-- **macOS:** `NOT_APPLICABLE`; FilePilot y sus artefactos nativos no incluyen esta plataforma.
-- **CI:** `PENDING`; falta validar el workflow de release y el commit candidato.
+- **Linux:** `PASS`; suite, ejecutable independiente y `tar.gz` verificados en Ubuntu 22.04 con Python 3.11.
+- **Windows:** `PASS`; ejecutable independiente, ZIP y wheel verificados localmente y en Windows Server 2022 con Python 3.11.
+- **macOS:** `PASS`; router y puente verificados en dos versiones de Python; los artefactos de FilePilot no aplican.
+- **CI:** `PASS`; las ejecuciones 33507223769 y 33507223770 completaron las tres construcciones y los diez trabajos transversales; la publicación se omitió en la rama.
 
 ## Bloqueadores
 
@@ -30,4 +30,4 @@ Ninguno.
 
 ## Siguiente acción exacta
 
-Completar T1 y continuar por las dependencias hasta validar los artefactos y la release.
+Integrar el pull request 1 y crear la etiqueta `v0.1.0` para validar la release pública.

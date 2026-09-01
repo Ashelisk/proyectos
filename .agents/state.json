@@ -2,17 +2,17 @@
   "$schema": "state.schema.json",
   "task_id": "filepilot-distribucion",
   "active_branch": "feat/filepilot-distribucion",
-  "verified_commit": "98049fcab3582e5db82858966afb87e672aa5c52",
-  "last_platform": "windows",
+  "verified_commit": "4dd624eeddb0f1e16904caef709d90add587e5a4",
+  "last_platform": "ci",
   "status": "IN_PROGRESS",
   "cycle": 0,
   "tests": {
-    "linux": {"status": "PENDING", "command": "GitHub Actions: Release FilePilot", "summary": "Falta construir y probar el ejecutable Linux x86_64."},
-    "windows": {"status": "PENDING", "command": "python tools/release.py; GitHub Actions: Release FilePilot", "summary": "Falta construir y probar el ejecutable Windows x64."},
-    "macos": {"status": "NOT_APPLICABLE", "command": null, "summary": "FilePilot y sus artefactos nativos no incluyen macOS."},
-    "ci": {"status": "PENDING", "command": "GitHub Actions: Pruebas multiplataforma y Release FilePilot", "summary": "Falta validar el workflow de release y el commit candidato."}
+    "linux": {"status": "PASS", "command": "GitHub Actions: Distribución de FilePilot #3", "summary": "La suite, el ejecutable Linux x86_64, su ejecución independiente y el archivo tar.gz pasaron en Ubuntu 22.04 con Python 3.11."},
+    "windows": {"status": "PASS", "command": "python tools/release.py; GitHub Actions: Distribución de FilePilot #3", "summary": "El ejecutable Windows x64 y el wheel pasaron localmente; la CI repitió suite, construcción, ejecución independiente y ZIP en Windows Server 2022 con Python 3.11."},
+    "macos": {"status": "PASS", "command": "GitHub Actions: Pruebas multiplataforma #10", "summary": "Router y puente pasaron con Python 3.11 y la última disponible; los artefactos de FilePilot no aplican a macOS."},
+    "ci": {"status": "PASS", "command": "GitHub Actions: Pruebas multiplataforma #10 y Distribución de FilePilot #3", "summary": "Los diez trabajos transversales y las tres construcciones de entrega pasaron; la publicación se omitió correctamente en la rama."}
   },
-  "next_action": "Completar T1 y continuar por las dependencias hasta validar los artefactos y la release.",
+  "next_action": "Integrar el pull request 1 y crear la etiqueta v0.1.0 para validar la release pública.",
   "blocked_reason": null,
-  "updated_at": "2026-09-01T10:03:52Z"
+  "updated_at": "2026-09-01T12:24:21Z"
 }
