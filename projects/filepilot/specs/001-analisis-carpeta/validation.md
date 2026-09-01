@@ -1,8 +1,8 @@
 # Validación — FilePilot, especificación 001
 
-**V-9 y V-10 corregidos y verificados.** El análisis, las exclusiones y el informe están integrados. T1 a T13 cumplen sus condiciones dentro del alcance ejecutado; T14 conserva pendiente la ejecución de sus comandos de Linux.
+**V-9 y V-10 corregidos y verificados.** El análisis, las exclusiones y el informe están integrados. T1 a T13 cumplen sus condiciones dentro del alcance ejecutado; T14 conserva pendiente la combinación Linux/Python 3.11.
 
-**Veredicto global: no concluyente.** No quedan defectos demostrados abiertos. Las pruebas de enlaces simbólicos reales pasan en Windows; faltan la ejecución en Linux, sus comprobaciones de permisos reales y los comandos de T14. No se declara validada toda la compatibilidad de la spec.
+**Veredicto global: no concluyente.** No quedan defectos demostrados abiertos. Los enlaces simbólicos reales pasan en Windows y Linux, y los permisos reales pasan en Linux/Python 3.14.4. Falta Linux/Python 3.11; no se declara validada toda la compatibilidad de la spec.
 
 ## Alcance y entorno
 
@@ -11,6 +11,8 @@ Validación del 2026-08-31, base de referencia `f0e2e03`, con el mismo código y
 Windows 11 AMD64, Python **3.11.9 y 3.14.7**, pytest 9.1.1. Instalaciones editables separadas: `.sdd-check/venvs/filepilot-311/` y `projects/filepilot/.venv/`; ambas importan el producto integrado. La versión 3.14 se conserva como predeterminada. No se añadieron dependencias de ejecución ni se modificaron requisitos para hacer pasar las pruebas.
 
 ## Evidencia ejecutada
+
+En Linux, el 2026-09-01, Python 3.14.4 y pytest 9.0.2 ejecutaron la suite desde una instalación editable aislada: **209 superadas y 4 omitidas** en 1,61 s. Las omisiones corresponden a tres pruebas del atributo oculto de Windows y una unión de directorio de Windows; las pruebas de permisos mediante `chmod` y enlaces simbólicos reales pasan. La orden instalada `filepilot analizar filepilot --recursivo` terminó con código cero, clasificó 12 archivos y no registró omisiones. No estaba disponible Python 3.11.
 
 Desde `projects/filepilot/`:
 

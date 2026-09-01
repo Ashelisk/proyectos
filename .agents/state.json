@@ -1,0 +1,18 @@
+{
+  "$schema": "state.schema.json",
+  "task_id": "cross-platform-agent-workflow",
+  "active_branch": "chore/cross-platform-agent-workflow",
+  "last_known_commit": "3a6129b6c8b2059e8c789470df2e858c13457348",
+  "last_platform": "linux",
+  "status": "IN_PROGRESS",
+  "cycle": 0,
+  "tests": {
+    "linux": {"status": "PASS", "command": "python3 tools/agent_router/router.py test --json", "summary": "Router 12/12, puente 21/21 y FilePilot 209 superadas/4 omitidas; CLI recursivo correcto."},
+    "windows": {"status": "PENDING", "command": null, "summary": "Pendiente de ejecución."},
+    "macos": {"status": "PENDING", "command": null, "summary": "Router pendiente; FilePilot no aplica."},
+    "ci": {"status": "PENDING", "command": null, "summary": "Pendiente tras el push."}
+  },
+  "next_action": "Subir la rama y comprobar el workflow Pruebas multiplataforma en GitHub Actions.",
+  "blocked_reason": null,
+  "updated_at": "2026-09-01T00:43:29Z"
+}

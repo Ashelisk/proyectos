@@ -44,13 +44,13 @@ Derivadas de [plan.md](plan.md) y trazadas a los requisitos de [spec.md](spec.md
 
 **T6 a T13, 2026-08-31.** La suite integrada da **205 superadas y 8 omitidas** en Windows 11, tanto con Python 3.11.9 como con 3.14.7 y pytest 9.1.1. Cubre exclusiones, atributo Windows real, informe, vacío, fallos por entrada, conservación del árbol, auditoría de aperturas y ausencia de red. V-9 y V-10 están corregidos; las nuevas regresiones fallaron antes de corregir y pasan después. Se repitieron también siete casos independientes y dieciséis invocaciones de CLI por versión, todos correctos. Las correcciones fueron autorrevisadas, sin presentarlas como un contraste externo adicional.
 
-**Portabilidad y T14.** La ejecución manual elevada sobre la base de referencia `f0e2e03`, cuyos informes JUnit se revisaron, da **212 superadas y 1 omitida** con Python 3.11.9 y 3.14.7. Pasan los siete casos de enlaces simbólicos reales antes omitidos en Windows. Solo se omite la denegación mediante `chmod`, no aplicable en Windows. La evidencia anterior sin privilegios (205/8) sigue siendo válida para ese entorno. T12 y T13 cumplen sus condiciones dentro del alcance ejecutado; Linux sigue pendiente. El README está escrito y sus comandos de Windows ya se verificaron con una instalación nueva; T14 sigue abierta hasta ejecutar los comandos de Linux y registrar sus resultados.
+**Portabilidad y T14.** La ejecución manual elevada sobre la base de referencia `f0e2e03`, cuyos informes JUnit se revisaron, da **212 superadas y 1 omitida** con Python 3.11.9 y 3.14.7 en Windows. En Linux, la versión integrada da **209 superadas y 4 omitidas** con Python 3.14.4; pasan permisos y enlaces reales, y las omisiones son exclusivas de Windows. También pasa el análisis recursivo del README. T12 y T13 cumplen dentro de las combinaciones ejecutadas; T14 sigue abierta hasta repetir los comandos Linux con Python 3.11.
 
 ## Cobertura y estado
 
 RF-1 (T8, T13), RF-2 (T2), RF-3 (T5), RF-4 (T5, T6), RF-5 (T4), RF-6 (T4), RF-7 (T4, T8), RF-8 (T8), RF-9 (T6), RF-10 (T11, T13), RF-11 (T3), RF-12 (T9, T10), RF-13 (T10), RF-14 (T3, T6, T13), RF-15 (T6, T7), RF-16 (T3, T13), RNF-1 (T1, T13), RNF-2 (T12), RNF-3 (T2, T10).
 
-T1 a T13 completadas dentro del alcance ejecutado. El CLI ya recorre, clasifica y emite el informe con sus avisos y códigos de salida. **Siguiente paso: completar la verificación de T14 en Linux y la matriz de portabilidad**, sin reimplementar V-9/V-10 ni afirmar compatibilidad no ejecutada. La validación global sigue siendo no concluyente por esas limitaciones de entorno.
+T1 a T13 completadas dentro del alcance ejecutado. El CLI ya recorre, clasifica y emite el informe con sus avisos y códigos de salida. **Siguiente paso: ejecutar T14 en Linux con Python 3.11**, sin reimplementar V-9/V-10 ni afirmar compatibilidad no ejecutada. La validación global sigue siendo no concluyente por esa combinación pendiente.
 
 Quedan fuera de estas tareas los comportamientos excluidos por la spec: mover u organizar archivos, conflictos de nombre, duplicados, reglas configurables, salida en JSON y deshacer.
 
