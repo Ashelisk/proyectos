@@ -224,6 +224,7 @@ def verify_executable(executable: Path) -> None:
 def parser() -> argparse.ArgumentParser:
     result = argparse.ArgumentParser(description=__doc__)
     commands = result.add_subparsers(dest="command", required=True)
+    commands.add_parser("mostrar-version")
     version = commands.add_parser("validar-version")
     version.add_argument("--tag", required=True)
     package = commands.add_parser("empaquetar")
@@ -246,7 +247,9 @@ def parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
     try:
-        if args.command == "validar-version":
+        if args.command == "mostrar-version":
+            value = project_version()
+        elif args.command == "validar-version":
             value = validate_tag(args.tag)
         elif args.command == "empaquetar":
             value = package_archive(args.plataforma, args.ejecutable, args.salida)

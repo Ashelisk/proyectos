@@ -35,6 +35,7 @@ def crear_wheel(ruta: Path, dependencia: str = "pytest>=8; extra == 'dev'") -> N
 
 
 def test_version_etiqueta_y_nombres() -> None:
+    assert release.main(["mostrar-version"]) == 0
     assert release.validate_tag("v0.1.0") == "0.1.0"
     assert release.artifact_name("windows") == "filepilot-v0.1.0-windows-x64.zip"
     assert release.artifact_name("linux") == "filepilot-v0.1.0-linux-x86_64.tar.gz"
