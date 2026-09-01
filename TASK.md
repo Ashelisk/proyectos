@@ -16,7 +16,6 @@
 
 ## Pendiente
 
-- Crear el commit y subir la rama.
 - Esperar los jobs Linux, Windows y macOS de GitHub Actions.
 - Corregir únicamente hallazgos reproducibles de CI; no integrar todavía en `main`.
 
@@ -25,7 +24,7 @@
 - **Linux:** `PASS`; router 12/12, puente 21/21, FilePilot 209 superadas/4 omitidas (solo Windows), CLI recursivo con código cero, JSON/bytecode/diff/secretos correctos.
 - **Windows:** pendiente de CI y de la siguiente ejecución local aplicable.
 - **macOS:** pendiente de CI para el router; FilePilot no declara compatibilidad con macOS.
-- **CI:** pendiente tras subir la rama.
+- **CI:** `PENDING`; workflow `Pruebas multiplataforma` en cola para `ee35a2d` (ejecución 33456068029).
 
 ## Bloqueadores
 
@@ -33,4 +32,4 @@ Ninguno.
 
 ## Siguiente acción exacta
 
-Subir `chore/cross-platform-agent-workflow` y comprobar el workflow `Pruebas multiplataforma` en GitHub Actions.
+Esperar a que finalice la ejecución 33456068029 de `Pruebas multiplataforma` y revisar todos sus jobs antes de integrar.
