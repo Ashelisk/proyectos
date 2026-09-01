@@ -1,29 +1,28 @@
 # Tarea activa
 
-- **Objetivo:** crear un flujo compartido y seguro para continuar el desarrollo entre clones independientes de Windows y Linux mediante GitHub.
-- **Rama:** `main`
-- **Estado:** `PASS` — flujo integrado y verificado.
-- **Identificador:** `cross-platform-agent-workflow`
+- **Objetivo:** distribuir FilePilot como ejecutable independiente para Windows x64 y Linux x86_64, con wheel, sumas SHA-256 y GitHub Release automática.
+- **Rama:** `feat/filepilot-distribucion`
+- **Estado:** `IN_PROGRESS` — especificación, clarificación, plan y tareas preparados; comienza T1.
+- **Identificador:** `filepilot-distribucion`
 
 ## Criterios de aceptación
 
-- Documentación raíz con roles, contexto comprobado, tablero y criterios objetivos.
-- Estado compartido pequeño, documentado y validable, separado de datos locales.
-- Router y lanzadores que cubren `doctor`, `sync`, `status`, `test`, la simulación de `cycle` y `checkpoint` sin rutas locales codificadas.
-- Ciclos reales de Claude Code y Codex limitados al puente autorizado hasta que el router pueda reutilizar todos sus controles.
-- Pruebas automatizadas multiplataforma y GitHub Actions para Linux, Windows y macOS, respetando las plataformas de cada producto.
-- Verificación local y CI del commit candidato antes de integrar la rama en `main` mediante avance rápido.
+- La spec 002 conserva el comportamiento de la spec 001 y define cuatro artefactos públicos.
+- Los archivos nativos funcionan sin Python y no contienen materiales de desarrollo o SDD.
+- La versión, el contenido permitido, las sumas y las pruebas bloquean una publicación inválida o parcial.
+- La release usa licencia MIT, permisos mínimos y CI nativa en Windows y Linux.
+- La etiqueta `v0.1.0` produce una release verificada con los nombres acordados.
 
 ## Pendiente
 
-Nada para esta tarea.
+- Ejecutar T1 a T6 de `projects/filepilot/specs/002-distribucion/tasks.md`.
 
 ## Resultados por plataforma
 
-- **Linux:** `PASS`; la CI ejecutó router y puente con Python 3.11 y la última disponible; FilePilot conserva 209 superadas/4 omitidas por versión y CLI recursivo correcto.
-- **Windows:** `PASS`; router 16/16, puente 21/21 y FilePilot 205 superadas/8 omitidas sin privilegios en la regresión local; la CI pasó en dos versiones y se conserva la evidencia privilegiada de 212/1 con Python 3.11.9 y 3.14.7.
-- **macOS:** `PASS`; router y puente pasaron en dos versiones de Python; FilePilot no aplica.
-- **CI:** `PASS`; los diez trabajos de la ejecución 33503661988 pasaron sobre `b2d9bbe` con las acciones oficiales v7.
+- **Linux:** `PENDING`; falta construir y probar el ejecutable independiente.
+- **Windows:** `PENDING`; falta construir y probar el ejecutable independiente.
+- **macOS:** `NOT_APPLICABLE`; FilePilot y sus artefactos nativos no incluyen esta plataforma.
+- **CI:** `PENDING`; falta validar el workflow de release y el commit candidato.
 
 ## Bloqueadores
 
@@ -31,4 +30,4 @@ Ninguno.
 
 ## Siguiente acción exacta
 
-Sincronizar `main` con `agent-router sync` en el siguiente sistema y abrir la próxima tarea mediante su fase SDD correspondiente.
+Completar T1 y continuar por las dependencias hasta validar los artefactos y la release.

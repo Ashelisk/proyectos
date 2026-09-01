@@ -1,0 +1,18 @@
+# Tareas — Distribución para usuarios finales
+
+Derivadas de [plan.md](plan.md) y trazadas a [spec.md](spec.md). Las rutas son relativas a la raíz del repositorio salvo indicación contraria.
+
+- [x] **T1 — Preparar licencia, documentación y metadatos.** Añadir la licencia MIT, crear el README destinado a las descargas y declarar las herramientas de release fuera de las dependencias de ejecución. Requisitos: RF-5, RF-7, RF-9, RF-10, RNF-2. Dependencias: ninguna. Archivos: `LICENSE`, `projects/filepilot/README_USUARIO.md`, `projects/filepilot/pyproject.toml`. Hecho cuando: el texto para usuarios cubre plataformas, puesta en marcha, uso y códigos; los metadatos identifican la licencia y la aplicación sigue declarando cero dependencias de ejecución.
+
+- [x] **T2 — Implementar las reglas de construcción y verificación.** Crear la entrada mínima de PyInstaller y un helper en Python estándar que valide versión, nombres, contenido de archivos, ejecución independiente y sumas. Añadir pruebas para reglas válidas e inválidas. Requisitos: RF-1, RF-3 a RF-8, RNF-3. Dependencias: T1. Archivos: `projects/filepilot/tools/filepilot_entry.py`, `projects/filepilot/tools/release.py`, `projects/filepilot/tests/test_release.py`. Hecho cuando: las pruebas rechazan etiquetas o contenidos incorrectos, validan ZIP y `tar.gz`, detectan sumas alteradas y la suite completa sigue pasando.
+
+- [ ] **T3 — Construir y probar los artefactos disponibles en Windows.** Construir `filepilot.exe` y el wheel con las herramientas declaradas; empaquetar el ZIP y probar ejecutable, wheel y sumas desde carpetas ajenas al repositorio. Requisitos: RF-4 a RF-8, RNF-1, RNF-2. Dependencias: T2. Áreas: artefactos temporales excluidos de Git y comandos del plan. Hecho cuando: el ejecutable funciona sin Python en `PATH`, el wheel nuevo proporciona ambas entradas y los archivos tienen contenido y sumas correctos; la evidencia no se versiona como binario.
+
+- [ ] **T4 — Automatizar la release multiplataforma.** Crear el workflow de etiquetas con construcción nativa en Windows y Linux, wheel aislado, transferencia de artefactos, allowlist, sumas y publicación mediante borrador. Requisitos: RF-1 a RF-8, RNF-1 a RNF-3. Dependencias: T2. Archivos: `.github/workflows/release-filepilot.yml`. Hecho cuando: el YAML usa permisos mínimos, no publica desde ramas o pull requests, no admite una entrega parcial y todos los nombres y comandos coinciden con la spec y el helper.
+
+- [ ] **T5 — Integrar y validar la automatización.** Ejecutar pruebas locales, revisar el diff y hacer pasar la CI de rama en Linux, Windows y macOS para las herramientas comunes, además de FilePilot en sus plataformas. Requisitos: RF-2, RNF-1 a RNF-3. Dependencias: T3, T4. Áreas: workflow multiplataforma existente, rama de entrega y GitHub Actions. Hecho cuando: el commit candidato tiene todos sus trabajos correctos y no quedan cambios o artefactos locales sin controlar.
+
+- [ ] **T6 — Publicar y validar `v0.1.0`.** Integrar el candidato, crear la etiqueta correspondiente a la versión, observar la release automática y contrastar cada requisito con los archivos publicados. Requisitos: RF-1 a RF-10, RNF-1 a RNF-3. Dependencias: T5. Archivos: `validation.md`, estado de la tarea y GitHub Release. Hecho cuando: la release pública contiene exactamente los cuatro archivos, pasan las sumas y las pruebas de Windows y Linux, y la validación registra límites reales sin afirmar plataformas no ejecutadas.
+
+La primera tarea ejecutable es T1. No hay bloqueos ni trabajo de comportamiento pendiente en la spec 001. PyPI, instaladores nativos, firma, actualizaciones y arquitecturas excluidas no forman parte de estas tareas.
+

@@ -7,6 +7,7 @@ name = "filepilot"
 version = "0.1.0"
 description = "Analiza una carpeta y propone su organización sin modificar nada"
 requires-python = ">=3.11"
+license = "MIT"
 # La aplicación funciona solo con la biblioteca estándar (RNF-1).
 dependencies = []
 
@@ -16,6 +17,7 @@ filepilot = "filepilot.cli:main"
 [project.optional-dependencies]
 # Herramientas de desarrollo, ajenas a la aplicación instalada.
 dev = ["pytest>=8"]
+release = ["build>=1,<2", "pyinstaller>=6,<7"]
 
 [tool.setuptools]
 packages = ["filepilot"]
