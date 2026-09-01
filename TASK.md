@@ -2,7 +2,7 @@
 
 - **Objetivo:** crear un flujo compartido y seguro para continuar el desarrollo entre clones independientes de Windows y Linux mediante GitHub.
 - **Rama:** `chore/cross-platform-agent-workflow`
-- **Estado:** `IN_PROGRESS` — implementación y Linux completos; pendiente CI multiplataforma.
+- **Estado:** `PASS` — implementación, validación local y CI multiplataforma completas.
 - **Identificador:** `cross-platform-agent-workflow`
 
 ## Criterios de aceptación
@@ -16,15 +16,14 @@
 
 ## Pendiente
 
-- Esperar los jobs Linux, Windows y macOS de GitHub Actions.
-- Corregir únicamente hallazgos reproducibles de CI; no integrar todavía en `main`.
+- Ninguno dentro del alcance de esta rama. `main` permanece sin integrar hasta una decisión humana.
 
 ## Resultados por plataforma
 
-- **Linux:** `PASS`; router 12/12, puente 21/21, FilePilot 209 superadas/4 omitidas (solo Windows), CLI recursivo con código cero, JSON/bytecode/diff/secretos correctos.
-- **Windows:** pendiente de CI y de la siguiente ejecución local aplicable.
-- **macOS:** pendiente de CI para el router; FilePilot no declara compatibilidad con macOS.
-- **CI:** `PENDING`; workflow `Pruebas multiplataforma` en cola para `ee35a2d` (ejecución 33456068029).
+- **Linux:** `PASS`; router 12/12, puente 21/21, FilePilot con Python 3.11.16 y 3.14.4: 209 superadas/4 omitidas (solo Windows) por versión; CLI recursivo con código cero.
+- **Windows:** `PASS`; evidencia local de FilePilot con Python 3.11.9 y 3.14.7, más CI correcta en Python 3.11 y 3.x.
+- **macOS:** `PASS`; router y puente correctos en CI con Python 3.11 y 3.x; FilePilot no declara compatibilidad con macOS.
+- **CI:** `PASS`; los diez jobs de `Pruebas multiplataforma` terminaron correctamente para `f3c9249` (ejecución 33456113911).
 
 ## Bloqueadores
 
@@ -32,4 +31,4 @@ Ninguno.
 
 ## Siguiente acción exacta
 
-Esperar a que finalice la ejecución 33456068029 de `Pruebas multiplataforma` y revisar todos sus jobs antes de integrar.
+Solicitar decisión humana antes de integrar la rama en `main`.

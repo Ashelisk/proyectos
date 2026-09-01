@@ -109,12 +109,12 @@ no aplicable en Windows. Las siete pruebas de enlaces reales pasan; preparar
 esos casos requiere el privilegio correspondiente, pero el uso normal de
 FilePilot no requiere ejecutar como administrador.
 
-En Linux se ha ejecutado con Python 3.14.4: 209 pruebas superadas y cuatro
-omitidas por ser casos exclusivos de Windows. También se verificó el análisis
-recursivo indicado abajo. Falta Python 3.11 en Linux, de modo que la matriz
-completa de compatibilidad todavía no está acreditada.
+En Linux se ha ejecutado con Python 3.11.16 y 3.14.4: 209 pruebas superadas y
+cuatro omitidas por ser casos exclusivos de Windows en cada versión. También se
+verificó el análisis recursivo indicado abajo. La matriz completa de
+compatibilidad declarada queda acreditada.
 
-### Comprobación pendiente en Linux
+### Comprobación en Linux
 
 Con Bash, desde `projects/filepilot` y con un usuario sin privilegios de
 administrador —como `root` la denegación de permisos no puede reproducirse y esa
@@ -131,9 +131,10 @@ filepilot analizar filepilot --recursivo
 deactivate
 ```
 
-La comprobación equivalente con Python 3.14.4 ya se ejecutó. Para completar la
-matriz queda repetir el bloque con Python 3.11 en `.venv/linux-311` y registrar
-su recuento y cualquier omisión.
+El bloque se ejecutó con Python 3.11.16 en `.venv/linux-311`; dio 209 pruebas
+superadas y cuatro omisiones exclusivas de Windows, y el análisis recursivo
+terminó con código cero y cero elementos omitidos. La comprobación equivalente
+con Python 3.14.4 produjo el mismo recuento de pruebas y omisiones.
 
 ## Alcance
 

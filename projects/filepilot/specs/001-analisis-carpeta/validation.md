@@ -1,8 +1,8 @@
 # Validación — FilePilot, especificación 001
 
-**V-9 y V-10 corregidos y verificados.** El análisis, las exclusiones y el informe están integrados. T1 a T13 cumplen sus condiciones dentro del alcance ejecutado; T14 conserva pendiente la combinación Linux/Python 3.11.
+**V-9 y V-10 corregidos y verificados.** El análisis, las exclusiones y el informe están integrados. T1 a T14 cumplen sus condiciones y la matriz declarada de Linux y Windows está ejecutada.
 
-**Veredicto global: no concluyente.** No quedan defectos demostrados abiertos. Los enlaces simbólicos reales pasan en Windows y Linux, y los permisos reales pasan en Linux/Python 3.14.4. Falta Linux/Python 3.11; no se declara validada toda la compatibilidad de la spec.
+**Veredicto global: cumple.** No quedan defectos demostrados abiertos. Los enlaces simbólicos reales pasan en Windows y Linux, los permisos reales pasan en Linux y la versión mínima y la última estable seleccionada están verificadas en ambas plataformas objetivo.
 
 ## Alcance y entorno
 
@@ -13,6 +13,8 @@ Windows 11 AMD64, Python **3.11.9 y 3.14.7**, pytest 9.1.1. Instalaciones editab
 ## Evidencia ejecutada
 
 En Linux, el 2026-09-01, Python 3.14.4 y pytest 9.0.2 ejecutaron la suite desde una instalación editable aislada: **209 superadas y 4 omitidas** en 1,61 s. Las omisiones corresponden a tres pruebas del atributo oculto de Windows y una unión de directorio de Windows; las pruebas de permisos mediante `chmod` y enlaces simbólicos reales pasan. La orden instalada `filepilot analizar filepilot --recursivo` terminó con código cero, clasificó 12 archivos y no registró omisiones. No estaba disponible Python 3.11.
+
+Ese mismo día, Python 3.11.16 y pytest 9.1.1 ejecutaron literalmente el bloque Bash del README desde `.venv/linux-311`, como usuario sin privilegios: **209 superadas y 4 omitidas** en 1,46 s. Las cuatro omisiones fueron los mismos casos exclusivos de Windows; las pruebas de permisos mediante `chmod` y enlaces simbólicos reales pasaron. La orden instalada `filepilot analizar filepilot --recursivo` terminó con código cero, clasificó 18 archivos —incluidos bytecodes generados por la suite— y no registró omisiones. Python 3.11 quedó instalado dentro de `.venv/pythons`, sin sustituir el intérprete del sistema.
 
 Desde `projects/filepilot/`:
 
@@ -54,19 +56,19 @@ La documentación de T14 se revisó e integró conservando los comandos de Windo
 | --- | --- | --- | --- |
 | RF-1 | Informes completos por módulo y ejecutable | Cumple | Entornos ejecutados |
 | RF-2 | Ayudas y errores de uso en `test_cli.py` | Cumple | Los encabezados ingleses de la ayuda no están prohibidos |
-| RF-3, RF-4 | Árboles reales, dos modos, recuentos y poda | Cumple en Windows | Linux pendiente |
+| RF-3, RF-4 | Árboles reales, dos modos, recuentos y poda | Cumple | Linux y Windows ejecutados |
 | RF-5, RF-6 | 46 extensiones, mayúsculas, última extensión y grupo sin extensión | Cumple | Mapa sin cambios |
 | RF-7, RF-8 | Tabla, tamaños, destinos planos y cinco extensiones con desempate | Cumple | Salida restrictiva comprobada con escapes |
-| RF-9 | Recuentos, prioridad y enlaces visibles/ocultos reales | Cumple en Windows | Fallos de metadatos inyectados; Linux pendiente |
+| RF-9 | Recuentos, prioridad y enlaces visibles/ocultos reales | Cumple | Fallos de metadatos también inyectados |
 | RF-10 | Instantáneas, ausencia de carpetas propuestas y auditoría `open` aislada | Cumple | Árboles y modos ejecutados |
-| RF-11 | Regresión de raíz, enlace roto real y fallos al enumerar | Cumple, parcial | Permisos reales pendientes en Linux; bucles con fallos controlados |
+| RF-11 | Regresión de raíz, enlace roto real y fallos al enumerar | Cumple | Permisos reales en Linux; bucles con fallos controlados |
 | RF-12 | Tres escenarios vacíos en subproceso y ausencia de archivos con error | Cumple | Conserva cero o tres según los motivos |
 | RF-13 | Fallos inyectados, continuación, causa española y código tres | Cumple | No acredita permisos reales |
-| RF-14 | Raíz oculta, poda, inclusión y raíz simbólica real | Cumple en Windows | Linux pendiente |
+| RF-14 | Raíz oculta, poda, inclusión y raíz simbólica real | Cumple | Linux y Windows ejecutados |
 | RF-15 | Tres pruebas con atributo Windows real y fallos controlados | Cumple en Windows | Linux no ejecutado |
-| RF-16 | Raíz simbólica real resuelta y analizada por módulo e integración | Cumple en Windows | Linux pendiente |
+| RF-16 | Raíz simbólica real resuelta y analizada por módulo e integración | Cumple | Linux y Windows ejecutados |
 | RNF-1 | Sin dependencias de ejecución; vigilancia de intentos y eventos de red | Cumple | Análisis ejecutados |
-| RNF-2 | Ambas versiones, rutas relativas/absolutas y Unicode | Cumple, parcial | Linux pendiente |
+| RNF-2 | Ambas versiones, rutas relativas/absolutas y Unicode | Cumple | Linux y Windows, versión mínima y última seleccionada |
 | RNF-3 | Uso, raíz y avisos con errores cuyo texto original está en otro idioma | Cumple | Causas derivadas del tipo y código, no del texto del sistema |
 
 ## Correcciones verificadas
@@ -79,7 +81,7 @@ La documentación de T14 se revisó e integró conservando los comandos de Windo
 
 La ejecución elevada cierra las siete omisiones de enlaces simbólicos en Windows. Permanece **una omisión de permisos reales mediante `chmod`**, no aplicable en Windows. Las tres pruebas del atributo oculto real también pasan. La evidencia elevada complementa la ejecución sin privilegios; no exige usar FilePilot como administrador ni sustituye las pruebas de permisos en Linux.
 
-Para completar la verificación en Linux: ejecutar el análisis y la suite con Python 3.11 y la última estable, usando un usuario sin privilegios para comprobar permisos reales; verificar enlaces y ejecutar los comandos Bash del README para cerrar T14. Registrar versiones, resultados y motivos de omisión. No hay más comportamiento de producto por definir ni defectos de V-9/V-10 pendientes de implementación.
+La verificación de Linux está completa con Python 3.11.16 y 3.14.4, usando un usuario sin privilegios: pasan los permisos y enlaces reales, y los comandos Bash del README quedan ejecutados. No hay más comportamiento de producto por definir ni defectos de V-9/V-10 pendientes de implementación.
 
 ## Evidencia anterior conservada
 
