@@ -2,7 +2,9 @@
 
 Repositorio para proyectos CLI, web y móviles con Spec-Driven Development (SDD). Incluye un paquete reutilizable de nueve skills: una coordinadora y ocho fases.
 
-**Estado de FilePilot:** [CLI local en Python](projects/filepilot/README.md) que analiza carpetas sin modificar archivos. Incluye clasificación por extensión, recorrido opcionalmente recursivo, exclusiones con motivo único e informe con tamaños y destinos propuestos. Conserva [constitución](projects/filepilot/docs/constitution.md), [spec 001](projects/filepilot/specs/001-analisis-carpeta/spec.md), [plan](projects/filepilot/specs/001-analisis-carpeta/plan.md) y [tareas](projects/filepilot/specs/001-analisis-carpeta/tasks.md). La [validación](projects/filepilot/specs/001-analisis-carpeta/validation.md) acredita la matriz declarada: Windows con Python 3.11.9 y 3.14.7 (**212 pruebas superadas y una omitida** por versión con privilegios para enlaces) y Linux con Python 3.11.16 y 3.14.4 (**209 superadas y cuatro omisiones exclusivas de Windows** por versión). T1 a T14 están completadas.
+**FilePilot v0.1.0:** [descarga para Windows, Linux o Python](https://github.com/Ashelisk/proyectos/releases/tag/v0.1.0). Los archivos para Windows y Linux contienen la aplicación independiente, el manual y la licencia; no requieren descargar el repositorio ni instalar Python.
+
+**Estado técnico de FilePilot:** [CLI en Python](projects/filepilot/README.md) que analiza carpetas sin modificar archivos. Incluye clasificación por extensión, recorrido opcionalmente recursivo, exclusiones con motivo único e informe con tamaños y destinos propuestos. Conserva [constitución](projects/filepilot/docs/constitution.md), [spec 001](projects/filepilot/specs/001-analisis-carpeta/spec.md), [spec 002](projects/filepilot/specs/002-distribucion/spec.md) y sus artefactos SDD. La [validación funcional](projects/filepilot/specs/001-analisis-carpeta/validation.md) acredita Windows con Python 3.11.9 y 3.14.7, y Linux con Python 3.11.16 y 3.14.4. La [validación de distribución](projects/filepilot/specs/002-distribucion/validation.md) acredita los ejecutables nativos, el wheel y la release pública.
 
 ## Uso y adaptación
 

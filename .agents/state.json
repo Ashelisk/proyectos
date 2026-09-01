@@ -1,18 +1,18 @@
 {
   "$schema": "state.schema.json",
   "task_id": "filepilot-distribucion",
-  "active_branch": "feat/filepilot-distribucion",
-  "verified_commit": "4dd624eeddb0f1e16904caef709d90add587e5a4",
+  "active_branch": "main",
+  "verified_commit": "248ad0df6f81172e949e37b81d1b174fb2914e80",
   "last_platform": "ci",
-  "status": "IN_PROGRESS",
+  "status": "PASS",
   "cycle": 0,
   "tests": {
-    "linux": {"status": "PASS", "command": "GitHub Actions: Distribución de FilePilot #3", "summary": "La suite, el ejecutable Linux x86_64, su ejecución independiente y el archivo tar.gz pasaron en Ubuntu 22.04 con Python 3.11."},
-    "windows": {"status": "PASS", "command": "python tools/release.py; GitHub Actions: Distribución de FilePilot #3", "summary": "El ejecutable Windows x64 y el wheel pasaron localmente; la CI repitió suite, construcción, ejecución independiente y ZIP en Windows Server 2022 con Python 3.11."},
+    "linux": {"status": "PASS", "command": "GitHub Actions: Distribución de FilePilot, ejecución 33521838398", "summary": "La suite, el ejecutable Linux x86_64, su ejecución independiente y el archivo tar.gz pasaron en Ubuntu 22.04 con Python 3.11."},
+    "windows": {"status": "PASS", "command": "GitHub Actions: Distribución de FilePilot, ejecución 33521838398", "summary": "El ejecutable Windows x64 y el wheel pasaron localmente; la ejecución final repitió suite, construcción, ejecución independiente y ZIP en Windows Server 2022 con Python 3.11."},
     "macos": {"status": "PASS", "command": "GitHub Actions: Pruebas multiplataforma #10", "summary": "Router y puente pasaron con Python 3.11 y la última disponible; los artefactos de FilePilot no aplican a macOS."},
-    "ci": {"status": "PASS", "command": "GitHub Actions: Pruebas multiplataforma #10 y Distribución de FilePilot #3", "summary": "Los diez trabajos transversales y las tres construcciones de entrega pasaron; la publicación se omitió correctamente en la rama."}
+    "ci": {"status": "PASS", "command": "GitHub Actions: ejecución 33521838398; GitHub Release v0.1.0", "summary": "Windows, Linux, wheel y publicación pasaron; la release pública contiene los cuatro assets propios previstos y sus sumas SHA-256."}
   },
-  "next_action": "Integrar el pull request 1 y crear la etiqueta v0.1.0 para validar la release pública.",
+  "next_action": "Tarea cerrada; iniciar el siguiente incremento mediante su fase SDD correspondiente.",
   "blocked_reason": null,
-  "updated_at": "2026-09-01T12:24:21Z"
+  "updated_at": "2026-09-01T14:55:50Z"
 }

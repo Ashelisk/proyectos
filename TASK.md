@@ -1,8 +1,8 @@
 # Tarea activa
 
 - **Objetivo:** distribuir FilePilot como ejecutable independiente para Windows x64 y Linux x86_64, con wheel, sumas SHA-256 y GitHub Release automática.
-- **Rama:** `feat/filepilot-distribucion`
-- **Estado:** `IN_PROGRESS` — T1 a T5 completadas; falta publicar y validar `v0.1.0`.
+- **Rama:** `main`
+- **Estado:** `PASS` — `v0.1.0` publicada y validada.
 - **Identificador:** `filepilot-distribucion`
 
 ## Criterios de aceptación
@@ -15,14 +15,14 @@
 
 ## Pendiente
 
-- Ejecutar T6 de `projects/filepilot/specs/002-distribucion/tasks.md`.
+Nada para esta tarea.
 
 ## Resultados por plataforma
 
 - **Linux:** `PASS`; suite, ejecutable independiente y `tar.gz` verificados en Ubuntu 22.04 con Python 3.11.
 - **Windows:** `PASS`; ejecutable independiente, ZIP y wheel verificados localmente y en Windows Server 2022 con Python 3.11.
 - **macOS:** `PASS`; router y puente verificados en dos versiones de Python; los artefactos de FilePilot no aplican.
-- **CI:** `PASS`; las ejecuciones 33507223769 y 33507223770 completaron las tres construcciones y los diez trabajos transversales; la publicación se omitió en la rama.
+- **CI:** `PASS`; la ejecución 33521838398 completó Windows, Linux, wheel y publicación. La [release v0.1.0](https://github.com/Ashelisk/proyectos/releases/tag/v0.1.0) contiene los cuatro archivos propios previstos y sus sumas SHA-256.
 
 ## Bloqueadores
 
@@ -30,4 +30,4 @@ Ninguno.
 
 ## Siguiente acción exacta
 
-Integrar el pull request 1 y crear la etiqueta `v0.1.0` para validar la release pública.
+Iniciar el siguiente incremento mediante su fase SDD correspondiente.
