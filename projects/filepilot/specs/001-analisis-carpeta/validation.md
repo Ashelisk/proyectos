@@ -6,7 +6,7 @@
 
 ## Alcance y entorno
 
-Validación del 2026-08-31, base de referencia `f0e2e03`, con el mismo código y pruebas integrados en `a2ce1fa`. RNF-2 y la constitución fijan Linux y Windows como plataformas objetivo. Se contrastaron spec, clarificaciones, plan y tareas. El bloque recibido fue revisado independientemente; las correcciones posteriores y los documentos fueron autorrevisados. La ejecución elevada fue manual y sus informes JUnit se revisaron; no se presenta como una ejecución del coordinador. La reducción de plataformas no acredita las comprobaciones aún pendientes.
+Validación cerrada el 2026-09-01, con el código y las pruebas integrados en `a2ce1fa` y la documentación de Windows en `f0e2e03`. RNF-2 y la constitución fijan Linux y Windows como plataformas objetivo. Se contrastaron spec, clarificaciones, plan y tareas. El bloque recibido fue revisado independientemente; las correcciones posteriores y los documentos fueron autorrevisados. La ejecución elevada de Windows fue manual y sus informes JUnit se revisaron; no se presenta como una ejecución del coordinador. La evidencia posterior de Linux completa la matriz sin modificar el producto.
 
 Windows 11 AMD64, Python **3.11.9 y 3.14.7**, pytest 9.1.1. Instalaciones editables separadas: `.sdd-check/venvs/filepilot-311/` y `projects/filepilot/.venv/`; ambas importan el producto integrado. La versión 3.14 se conserva como predeterminada. No se añadieron dependencias de ejecución ni se modificaron requisitos para hacer pasar las pruebas.
 
@@ -46,9 +46,9 @@ La suite incluye 24 escenarios de salida redirigida: módulo y ejecutable, cuatr
 
 Las comprobaciones adicionales están en `.sdd-check/puente/filepilot-t6-t14-20260831/test_revision_limites.py` y `revision_cli.py`. Se ejecutaron desde la raíz Git con cada intérprete del producto integrado. Sus resultados de CLI se conservan en `.sdd-check/cierre-cli311.json` y `cierre-cli314.json`. Estos archivos temporales no forman parte del paquete publicado; las regresiones permanentes están en `tests/`.
 
-Se verificó también una instalación nueva en `.sdd-check/readme-cierre/projects/filepilot/`: comandos de Windows del README, instalación normal y editable, ambas entradas y `pytest`. La suite dio **205 superadas y 8 omitidas** (17,25 s). `PYTEST_ADDOPTS` únicamente desactivó la caché y fijó el directorio temporal. Los comandos de Linux no se ejecutaron.
+Antes de la ejecución en Linux se verificó también una instalación nueva en `.sdd-check/readme-cierre/projects/filepilot/`: comandos de Windows del README, instalación normal y editable, ambas entradas y `pytest`. La suite dio **205 superadas y 8 omitidas** (17,25 s). `PYTEST_ADDOPTS` únicamente desactivó la caché y fijó el directorio temporal.
 
-La documentación de T14 se revisó e integró conservando los comandos de Windows. La guía de Linux usa entornos separados bajo `.venv/`, cuya exclusión de Git se comprobó, e identifica los comandos todavía no ejecutados. La revisión documental no cierra T14 ni acredita Linux. Código y pruebas permanecen sin cambios respecto a la versión ejecutada.
+La documentación de T14 se revisó conservando los comandos de Windows. La guía de Linux usa entornos separados bajo `.venv/`, cuya exclusión de Git se comprobó. Sus comandos se ejecutaron después con Python 3.11.16 y 3.14.4, cerrando T14 sin cambios de código ni pruebas.
 
 ## Cumplimiento
 
@@ -65,7 +65,7 @@ La documentación de T14 se revisó e integró conservando los comandos de Windo
 | RF-12 | Tres escenarios vacíos en subproceso y ausencia de archivos con error | Cumple | Conserva cero o tres según los motivos |
 | RF-13 | Fallos inyectados, continuación, causa española y código tres | Cumple | No acredita permisos reales |
 | RF-14 | Raíz oculta, poda, inclusión y raíz simbólica real | Cumple | Linux y Windows ejecutados |
-| RF-15 | Tres pruebas con atributo Windows real y fallos controlados | Cumple en Windows | Linux no ejecutado |
+| RF-15 | Atributo Windows real y comportamiento fuera de Windows | Cumple | Atributo exclusivo de Windows; suite Linux ejecutada |
 | RF-16 | Raíz simbólica real resuelta y analizada por módulo e integración | Cumple | Linux y Windows ejecutados |
 | RNF-1 | Sin dependencias de ejecución; vigilancia de intentos y eventos de red | Cumple | Análisis ejecutados |
 | RNF-2 | Ambas versiones, rutas relativas/absolutas y Unicode | Cumple | Linux y Windows, versión mínima y última seleccionada |

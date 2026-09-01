@@ -30,4 +30,4 @@ El flujo de agentes y su CI cubren Linux, Windows y macOS. FilePilot solo declar
 
 FilePilot tiene evidencia en Windows 11 con Python 3.11.9 y 3.14.7: 212 pruebas superadas y una omitida con privilegios de enlaces simbólicos. En Linux, Python 3.11.16 con pytest 9.1.1 y Python 3.14.4 con pytest 9.0.2 dieron 209 pruebas superadas y 4 omisiones exclusivas de Windows en cada combinación; también pasó el análisis recursivo documentado. La matriz local declarada de Linux y Windows queda acreditada.
 
-Claude Code y Codex son herramientas opcionales para `cycle`; `doctor`, `status`, `sync`, `test` y `checkpoint` no requieren autenticación de agentes. Las sesiones y resultados locales de orquestación se guardan en `.agent-local/` y no se versionan.
+`doctor`, `status`, `sync`, `test` y `checkpoint` no requieren autenticación de agentes. `cycle` solo ofrece simulación mientras la ejecución real continúa en el puente autorizado de Claude Code / Codex. Las sesiones y resultados locales de orquestación se guardan en `.agent-local/` y no se versionan.

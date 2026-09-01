@@ -11,13 +11,14 @@ CLI en Python estándar para diagnosticar, sincronizar y relevar una rama entre 
 ./agent-router status --json
 ./agent-router test
 ./agent-router cycle --dry-run
-./agent-router cycle --max-cycles 5
 ./agent-router checkpoint --next-action "Continuar las pruebas en Windows"
 ```
 
 En PowerShell sustituye `./agent-router` por `./agent-router.ps1`. `doctor` y `status` son completamente de solo lectura. `sync --dry-run` no hace fetch ni cambia referencias; `sync` exige un árbol limpio, valida `origin`, hace `fetch --prune` y solo permite un fast-forward. Con `--branch` recupera una rama remota en el segundo sistema sin usar `main` para trabajo incompleto.
 
-`test` ejecuta las suites detectadas y declara FilePilot no aplicable en macOS. Para probar tanto el módulo como el ejecutable instalado, mantiene un entorno virtual ignorado en `.agent-local/`, usa los paquetes de desarrollo ya presentes e instala el checkout editable con `--no-build-isolation`; no descarga dependencias. CI realiza una instalación editable limpia. `cycle --dry-run` muestra adaptadores, documentos y esquema sin iniciar agentes. Un ciclo real solo se admite desde una terminal que no esté ya dentro de Claude o Codex, exige árbol limpio y limita los intentos. Claude implementa sin shell ni Git; Codex revisa en sandbox de solo lectura. Ambos deben devolver JSON conforme al esquema: un texto libre nunca equivale a `PASS`.
+`test` ejecuta las suites detectadas y declara FilePilot no aplicable en macOS. Usa el intérprete de desarrollo con el que se inicia el router; FilePilot y `pytest` deben estar instalados como indica su README. Para que una instalación editable de otro checkout no falsee el resultado, fija `PYTHONPATH` al FilePilot de la rama actual y usa un directorio temporal privado bajo `.agent-local/`. No crea entornos ni descarga dependencias. La salida estructurada permanece en JSON ASCII válido y la CLI configura UTF-8 cuando el terminal lo permite. CI realiza una instalación editable limpia.
+
+`cycle --dry-run` muestra los documentos y controles requeridos sin iniciar agentes. El ciclo real permanece deshabilitado: la programación y revisión usa `tools/puente_agentes/` hasta que el router pueda reutilizar sus rutas editables, modelo y esfuerzo acreditados, rondas, presupuesto, consumo, inspección del diff y aprobación. `cycle` nunca es un atajo para eludir esos límites.
 
 `checkpoint` no prepara cambios de trabajo implícitamente: la persona o coordinador debe revisarlos y ejecutar `git add` primero. El comando actualiza y prepara el estado, crea un commit normal y hace push de la rama actual; rechaza `main`, archivos sin preparar y remotos inesperados.
 

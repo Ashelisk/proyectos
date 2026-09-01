@@ -2,17 +2,17 @@
   "$schema": "state.schema.json",
   "task_id": "cross-platform-agent-workflow",
   "active_branch": "chore/cross-platform-agent-workflow",
-  "last_known_commit": "f3c92492149b48877f5a01c5f48ae3c6121e14db",
-  "last_platform": "linux",
-  "status": "PASS",
+  "verified_commit": "f3c92492149b48877f5a01c5f48ae3c6121e14db",
+  "last_platform": "windows",
+  "status": "IN_PROGRESS",
   "cycle": 0,
   "tests": {
-    "linux": {"status": "PASS", "command": "python3 tools/agent_router/router.py test --json", "summary": "Router 12/12 y puente 21/21; FilePilot 209 superadas/4 omitidas y CLI recursivo correcto con Python 3.11.16 y 3.14.4."},
-    "windows": {"status": "PASS", "command": "GitHub Actions y validación local documentada", "summary": "FilePilot validado localmente con Python 3.11.9 y 3.14.7; CI correcta con Python 3.11 y 3.x."},
-    "macos": {"status": "PASS", "command": "GitHub Actions: Pruebas multiplataforma", "summary": "Router y puente correctos con Python 3.11 y 3.x; FilePilot no aplica."},
-    "ci": {"status": "PASS", "command": "GitHub Actions: Pruebas multiplataforma", "summary": "Diez jobs correctos en la ejecución 33456113911 para f3c9249."}
+    "linux": {"status": "PENDING", "command": "GitHub Actions: Pruebas multiplataforma", "summary": "FilePilot conserva 209 superadas/4 omitidas por versión y la CLI recursiva correcta; falta ejecutar el router endurecido y el puente."},
+    "windows": {"status": "PASS", "command": "python tools/agent_router/router.py test --json", "summary": "Router 16/16, puente 21/21 y FilePilot 205 superadas/8 omitidas sin privilegios; se conserva la evidencia privilegiada 212/1 con Python 3.11.9 y 3.14.7."},
+    "macos": {"status": "PENDING", "command": "GitHub Actions: Pruebas multiplataforma", "summary": "FilePilot no aplica; falta CI del commit candidato."},
+    "ci": {"status": "PENDING", "command": "GitHub Actions: Pruebas multiplataforma", "summary": "La ejecución 33456113911 corresponde al commit anterior f3c9249."}
   },
-  "next_action": "Solicitar decisión humana antes de integrar la rama en main.",
+  "next_action": "Subir el commit candidato, exigir CI correcta en su HEAD e integrar mediante avance rápido en main.",
   "blocked_reason": null,
-  "updated_at": "2026-09-01T10:57:53Z"
+  "updated_at": "2026-09-01T09:36:02Z"
 }

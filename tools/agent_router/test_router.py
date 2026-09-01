@@ -1,13 +1,11 @@
 import argparse
-from contextlib import redirect_stderr, redirect_stdout
+from contextlib import redirect_stdout
 import io
 import json
-import os
 from pathlib import Path
 import subprocess
 import tempfile
 import unittest
-from unittest import mock
 
 import router
 
@@ -31,7 +29,7 @@ class RouterTests(unittest.TestCase):
         (self.root / ".agents").mkdir()
         self.state = {
             "$schema": "state.schema.json", "task_id": "test-task", "active_branch": "main",
-            "last_known_commit": None, "last_platform": "linux", "status": "IN_PROGRESS", "cycle": 0,
+            "verified_commit": None, "last_platform": "linux", "status": "IN_PROGRESS", "cycle": 0,
             "tests": {name: {"status": "PENDING", "command": None, "summary": ""} for name in ("windows", "linux", "macos", "ci")},
             "next_action": "probar", "blocked_reason": None, "updated_at": "2026-09-01T00:00:00Z",
         }
@@ -102,7 +100,26 @@ class RouterTests(unittest.TestCase):
         self.assertTrue(linux["filepilot"]["applicable"])
         self.assertFalse(macos["filepilot"]["applicable"])
         self.assertEqual(linux["filepilot"]["cwd"], "projects/filepilot")
-        self.assertIn("pip install -e", linux["filepilot"]["setup"])
+        self.assertIn("PYTHONPATH", linux["filepilot"]["setup"])
+        self.assertIn("--basetemp=<agent-local>", linux["filepilot"]["argv"])
+
+    def test_entorno_de_desarrollo_apunta_al_checkout_actual(self):
+        project = self.root / "projects" / "filepilot"
+        project.mkdir(parents=True)
+        environment = router.development_environment(project)
+        self.assertEqual(environment["PYTHONPATH"], str(project.resolve()))
+        with self.assertRaises(router.RouterError):
+            router.development_environment(self.root / "ausente")
+
+    def test_version_de_modulo_usa_el_interprete_activo(self):
+        result = router.module_version("modulo_router_inexistente")
+        self.assertFalse(result["available"])
+        self.assertIsNotNone(result["version"])
+
+    def test_json_es_imprimible_en_terminales_sin_unicode_completo(self):
+        with redirect_stdout(io.StringIO()) as output:
+            router.print_value({"detalle": "fallo \ufffd"}, structured=True)
+        self.assertIn(r"\ufffd", output.getvalue())
 
     def test_estado_estricto_y_escritura_utc(self):
         loaded = router.load_state(self.root)
@@ -114,6 +131,17 @@ class RouterTests(unittest.TestCase):
         with self.assertRaises(router.RouterError):
             router.load_state(self.root)
 
+    def test_estado_rechaza_resultados_y_ciclos_con_tipo_invalido(self):
+        for mutation in ("resultado", "ciclo"):
+            invalid = json.loads(json.dumps(self.state))
+            if mutation == "resultado":
+                invalid["tests"]["linux"]["status"] = "DESCONOCIDO"
+            else:
+                invalid["cycle"] = True
+            (self.root / ".agents" / "state.json").write_text(json.dumps(invalid), encoding="utf-8")
+            with self.assertRaises(router.RouterError):
+                router.load_state(self.root)
+
     def test_actualiza_tablero_sin_acumular_historial(self):
         router.update_task_board(self.root, "PASS", "linux", "11 pruebas correctas.", "Revisar CI.")
         text = (self.root / "TASK.md").read_text(encoding="utf-8")
@@ -121,29 +149,26 @@ class RouterTests(unittest.TestCase):
         self.assertIn("- **Linux:** `PASS`; 11 pruebas correctas.", text)
         self.assertTrue(text.rstrip().endswith("Revisar CI."))
 
-    def test_resultado_ambiguo_no_es_pass(self):
+    def test_estado_ambiguo_no_es_pass(self):
+        invalid = json.loads(json.dumps(self.state))
+        invalid["status"] = "PASS porque parece correcto"
+        (self.root / ".agents" / "state.json").write_text(json.dumps(invalid), encoding="utf-8")
         with self.assertRaises(router.RouterError):
-            router.validate_agent_result("PASS")
-        with self.assertRaises(router.RouterError):
-            router.validate_agent_result({"status": "PASS", "summary": "ok", "findings": []})
-        value = {"status": "PASS", "summary": "ok", "findings": [], "tests": ["suite"]}
-        self.assertEqual(router.validate_agent_result(value), value)
+            router.load_state(self.root)
 
     def test_dry_run_del_ciclo_no_invoca_agentes(self):
-        args = argparse.Namespace(max_cycles=5, dry_run=True, json=True)
-        with mock.patch.object(router, "invoke_claude") as claude, mock.patch.object(router, "invoke_codex") as codex:
-            with redirect_stdout(io.StringIO()) as output:
-                self.assertEqual(router.command_cycle(self.root, args), 0)
-            claude.assert_not_called()
-            codex.assert_not_called()
+        args = argparse.Namespace(max_cycles=3, dry_run=True, json=True)
+        with redirect_stdout(io.StringIO()) as output:
+            self.assertEqual(router.command_cycle(self.root, args), 0)
         data = json.loads(output.getvalue())
-        self.assertEqual(data["max_cycles"], 5)
-        self.assertIn("--json-schema", data["adapters"]["claude"])
-        self.assertIn("--output-schema", data["adapters"]["codex"])
+        self.assertFalse(data["enabled"])
+        self.assertEqual(data["max_cycles_requested"], 3)
+        self.assertIn("puente_agentes", data["command"])
 
-    def test_bloquea_recursion_por_entorno(self):
-        with mock.patch.dict(os.environ, {router.ACTIVE_ENV: "1"}):
-            self.assertTrue(router.nested_session())
+    def test_ciclo_real_permanece_deshabilitado(self):
+        args = argparse.Namespace(max_cycles=3, dry_run=False, json=True)
+        with self.assertRaises(router.RouterError):
+            router.command_cycle(self.root, args)
 
     def test_checkpoint_rechaza_main_sin_modificar_estado(self):
         before = (self.root / ".agents" / "state.json").read_bytes()
