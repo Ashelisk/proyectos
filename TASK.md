@@ -1,8 +1,8 @@
 # Tarea activa
 
 - **Objetivo:** crear un flujo compartido y seguro para continuar el desarrollo entre clones independientes de Windows y Linux mediante GitHub.
-- **Rama:** `chore/cross-platform-agent-workflow`
-- **Estado:** `IN_PROGRESS` — revisión de integración y endurecimiento en Windows.
+- **Rama:** `main`
+- **Estado:** `PASS` — flujo integrado y verificado.
 - **Identificador:** `cross-platform-agent-workflow`
 
 ## Criterios de aceptación
@@ -16,14 +16,14 @@
 
 ## Pendiente
 
-- Ejecutar CI sobre el commit candidato antes de integrar en `main`.
+Nada para esta tarea.
 
 ## Resultados por plataforma
 
-- **Linux:** `PENDING`; FilePilot conserva 209 superadas/4 omitidas por versión y CLI recursivo correcto; la CI debe ejecutar el router endurecido y el puente.
-- **Windows:** `PASS`; router 16/16, puente 21/21 y FilePilot 205 superadas/8 omitidas sin privilegios en la regresión actual; se conserva la evidencia privilegiada de 212/1 con Python 3.11.9 y 3.14.7.
-- **macOS:** `PENDING`; la CI del commit candidato debe repetir router y puente; FilePilot no aplica.
-- **CI:** `PENDING`; la ejecución anterior de diez jobs corresponde a `f3c9249`, anterior al endurecimiento.
+- **Linux:** `PASS`; la CI ejecutó router y puente con Python 3.11 y la última disponible; FilePilot conserva 209 superadas/4 omitidas por versión y CLI recursivo correcto.
+- **Windows:** `PASS`; router 16/16, puente 21/21 y FilePilot 205 superadas/8 omitidas sin privilegios en la regresión local; la CI pasó en dos versiones y se conserva la evidencia privilegiada de 212/1 con Python 3.11.9 y 3.14.7.
+- **macOS:** `PASS`; router y puente pasaron en dos versiones de Python; FilePilot no aplica.
+- **CI:** `PASS`; los diez trabajos de la ejecución 33503661988 pasaron sobre `b2d9bbe` con las acciones oficiales v7.
 
 ## Bloqueadores
 
@@ -31,4 +31,4 @@ Ninguno.
 
 ## Siguiente acción exacta
 
-Subir el commit candidato, exigir CI correcta en su `HEAD` e integrar mediante avance rápido en `main`.
+Sincronizar `main` con `agent-router sync` en el siguiente sistema y abrir la próxima tarea mediante su fase SDD correspondiente.
