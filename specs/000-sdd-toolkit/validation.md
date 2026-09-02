@@ -64,7 +64,7 @@ El revisor contrastó diez hashes antes/después: no cambiaron las skills evalua
 
 ## Instalación
 
-Destino personal: `C:/Users/picop/.agents/skills/`. Se siguió la ubicación personal indicada en la documentación actual de Codex. Las fuentes editables se conservan en `skills/`, en la raíz del repositorio.
+Destino personal: `~/.agents/skills/`. Se siguió la ubicación personal indicada en la documentación actual de Codex. Las fuentes editables se conservan en `skills/`, en la raíz del repositorio.
 
 Se comprobó antes de copiar que ninguno de los nueve nombres existía en destino. Se copiaron 19 archivos: dos por skill y una referencia adicional de la coordinadora. Todos coinciden con las fuentes mediante SHA-256. Después, las nueve entradas `SKILL.md` se leyeron correctamente desde el entorno restringido. La skill previa `hf-cli` no se modificó.
 

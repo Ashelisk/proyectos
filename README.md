@@ -1,83 +1,73 @@
-# Proyectos con SDD
+# Portfolio de software
 
-Repositorio para proyectos CLI, web y móviles con Spec-Driven Development (SDD). Incluye un paquete reutilizable de nueve skills: una coordinadora y ocho fases.
+[![Pruebas multiplataforma](https://github.com/Ashelisk/proyectos/actions/workflows/cross-platform.yml/badge.svg)](https://github.com/Ashelisk/proyectos/actions/workflows/cross-platform.yml)
+[![Distribución de FilePilot](https://github.com/Ashelisk/proyectos/actions/workflows/release-filepilot.yml/badge.svg)](https://github.com/Ashelisk/proyectos/actions/workflows/release-filepilot.yml)
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Licencia MIT](https://img.shields.io/badge/licencia-MIT-2D3748)](LICENSE)
 
-**FilePilot v0.1.0:** [descarga para Windows, Linux o Python](https://github.com/Ashelisk/proyectos/releases/tag/v0.1.0). Los archivos para Windows y Linux contienen la aplicación independiente, el manual y la licencia; no requieren descargar el repositorio ni instalar Python.
+Proyectos de software desarrollados de extremo a extremo: definición del comportamiento, diseño técnico, implementación, pruebas, automatización y distribución. El repositorio reúne aplicaciones CLI, herramientas de desarrollo y un método reutilizable de Spec-Driven Development (SDD).
 
-**Estado técnico de FilePilot:** [CLI en Python](projects/filepilot/README.md) que analiza carpetas sin modificar archivos. Incluye clasificación por extensión, recorrido opcionalmente recursivo, exclusiones con motivo único e informe con tamaños y destinos propuestos. Conserva [constitución](projects/filepilot/docs/constitution.md), [spec 001](projects/filepilot/specs/001-analisis-carpeta/spec.md), [spec 002](projects/filepilot/specs/002-distribucion/spec.md) y sus artefactos SDD. La [validación funcional](projects/filepilot/specs/001-analisis-carpeta/validation.md) acredita Windows con Python 3.11.9 y 3.14.7, y Linux con Python 3.11.16 y 3.14.4. La [validación de distribución](projects/filepilot/specs/002-distribucion/validation.md) acredita los ejecutables nativos, el wheel y la release pública.
+## Proyecto destacado: FilePilot
 
-## Uso y adaptación
+**FilePilot** es una aplicación de línea de comandos escrita en Python que analiza una carpeta y propone cómo organizar sus archivos sin modificar, mover, renombrar ni eliminar nada.
 
-El método puede aplicarse manualmente o con asistencia de IA. La documentación define las reglas, los requisitos y los criterios de validación de cada producto. Las skills son una ayuda opcional para agentes; no son necesarias para trabajar con SDD.
+- Clasificación por extensión y cálculo de tamaños.
+- Análisis del primer nivel o recorrido recursivo.
+- Tratamiento explícito de archivos ocultos, enlaces y errores de lectura.
+- Funcionamiento local, sin cuentas, servicios externos ni dependencias de ejecución.
+- Distribución como ejecutable independiente para Windows y Linux, además de paquete wheel para Python.
 
-Para desarrollar o adaptar un producto sin IA:
+**[Descargar FilePilot v0.1.0](https://github.com/Ashelisk/proyectos/releases/tag/v0.1.0)** · [Documentación de uso](projects/filepilot/README.md) · [Código fuente](projects/filepilot/filepilot) · [Pruebas](projects/filepilot/tests) · [Validación](projects/filepilot/specs/001-analisis-carpeta/validation.md)
 
-1. Revisar su constitución y definir los principios pendientes; en un producto nuevo, crear `docs/constitution.md`.
-2. Especificar el comportamiento y los criterios de aceptación en `specs/NNN-nombre/spec.md`, resolviendo las dudas antes del diseño.
-3. Preparar el plan técnico y las tareas; implementar y comprobar cada comportamiento especificado.
-4. Registrar la evidencia de validación. Si cambia el comportamiento requerido, actualizar primero la spec y después los documentos, código y pruebas afectados.
+```text
+filepilot analizar <ruta> [--recursivo] [--incluir-ocultos]
+```
 
-Cada producto conserva sus propias decisiones técnicas. El paquete SDD puede reutilizarse sin adoptar el lenguaje, los requisitos ni el dominio de FilePilot.
+| Aspecto | Implementación |
+| --- | --- |
+| Lenguaje | Python 3.11 o superior |
+| Dependencias de ejecución | Ninguna; utiliza la biblioteca estándar |
+| Plataformas objetivo | Windows x64 y Linux x86_64 |
+| Calidad | Pruebas unitarias, de integración, portabilidad y seguridad de lectura |
+| Automatización | GitHub Actions para pruebas, construcción y publicación de releases |
+| Distribución | Ejecutables nativos, wheel y sumas SHA-256 |
 
-## Skills para agentes de IA
+### Evidencia de calidad
 
-| Skill | Responsabilidad | Resultado habitual |
+- **Windows 11:** 212 pruebas superadas y una omitida por versión con Python 3.11.9 y 3.14.7.
+- **Linux:** 209 pruebas superadas y cuatro omisiones exclusivas de Windows por versión con Python 3.11.16 y 3.14.4.
+- **Integración continua:** construcción y verificación independiente de los artefactos para Windows y Linux antes de publicar la release.
+- **Trazabilidad:** requisitos, diseño, tareas y resultados de validación conservados junto al producto.
+
+## Estructura del repositorio
+
+```text
+projects/filepilot/       Aplicación, pruebas, documentación y especificaciones
+skills/                   Fuentes de las nueve skills del flujo SDD
+tools/agent_router/       Diagnóstico y sincronización entre entornos de trabajo
+tools/puente_agentes/     Coordinación local y controlada entre agentes
+specs/000-sdd-toolkit/    Especificación y validación del paquete SDD
+```
+
+## Forma de trabajo
+
+Los productos se desarrollan con un flujo SDD: constitución, especificación, clarificación, planificación, tareas, implementación y validación. Cada requisito se vincula con comprobaciones ejecutables y evidencia. El método puede aplicarse manualmente o con asistencia de IA; las herramientas de agentes son opcionales.
+
+El paquete incluye nueve skills reutilizables para coordinar y ejecutar las fases del proceso. Las fuentes están en [`skills/`](skills/) y su validación en [`specs/000-sdd-toolkit/`](specs/000-sdd-toolkit/).
+
+## Próximos proyectos
+
+| Proyecto | Tipo | Estado |
 | --- | --- | --- |
-| `sdd-coordinador` | Identificar estado y dirigir el siguiente paso autorizado | Fase, entregables y siguiente paso |
-| `sdd-constitucion` | Preguntar por enfoque y lenguajes, y documentar los principios elegidos | `docs/constitution.md` |
-| `sdd-especificacion` | Entrevistar y concretar comportamiento y aceptación | `spec.md` |
-| `sdd-clarificacion` | Detectar contradicciones y decisiones pendientes | `clarifications.md` |
-| `sdd-planificacion` | Diseñar la solución y su verificación | `plan.md` |
-| `sdd-tareas` | Descomponer en trabajo pequeño y comprobable | `tasks.md` |
-| `sdd-implementacion` | Programar las tareas autorizadas y verificarlas | Código, pruebas y evidencia |
-| `sdd-validacion` | Contrastar cada requisito con resultados reales | `validation.md` |
-| `sdd-cambio` | Mantener la spec al evolucionar el producto | Spec y documentos afectados |
+| FilePilot | CLI de organización segura de archivos | Versión 0.1.0 publicada |
+| API Sentinel | CLI de comprobación de APIs | Previsto |
+| Freelance Desk | Aplicación web para clientes y presupuestos | Previsto |
+| Pantry Pocket | Aplicación móvil de despensa y compra | Previsto |
+| ReservaFlow | Aplicación web de reservas | Previsto |
+| FieldOps | Aplicación móvil y web para intervenciones | Previsto |
 
-Las rutas son relativas a cada producto; los documentos de una funcionalidad se agrupan en `specs/NNN-nombre/`. Se conservan las convenciones existentes cuando el producto ya tiene otra estructura.
+Los detalles y tecnologías de los proyectos previstos se definirán en sus propias especificaciones antes de implementarlos.
 
-### Invocación
+## Licencia
 
-Ejemplo de petición para iniciar una especificación:
-
-> Prepara la primera especificación de FilePilot a partir de su constitución. Pregunta por el alcance y los comportamientos pendientes. No implementes código.
-
-Al crear una constitución o especificación, el agente pregunta por las decisiones pendientes y espera respuestas antes de fijarlas. Conserva las decisiones vigentes y actualiza la regla o requisito correspondiente, sin copiar la entrevista. La constitución contiene pocos principios; la spec detalla comportamientos y errores sin redundancias ni historial de conversación.
-
-También puedes mencionar una fase por su nombre, por ejemplo `$sdd-clarificacion`, para revisar una spec, o `$sdd-validacion` para comprobar una entrega. La selección concreta de skills en la interfaz depende de la versión de Codex; el nombre y una petición clara también permiten expresar la intención.
-
-Para continuar un incremento completo:
-
-> Implementa el incremento especificado de FilePilot siguiendo su plan y tareas. Consulta las decisiones pendientes antes de avanzar en el trabajo afectado y valida el resultado contra la spec.
-
-Una petición de «solo especificar» acaba en documentos. Una petición de construir un incremento puede recorrer sus fases y tareas, pero no permite saltarse las entrevistas ni sustituir respuestas por suposiciones. Fuera de esas decisiones de definición, no hace falta pedir permiso rutinario para cada paso de trabajo.
-
-### Revisiones con subagentes
-
-Para trabajar con Codex como coordinador/revisor y Claude Code como programador está disponible el [puente local](tools/puente_agentes/README.md). Intercambia encargos y correcciones por tarea en una copia Git aislada, con permisos y límites explícitos; los mensajes se conservan fuera del repositorio publicado. Su uso es opcional y requiere una conversación activa de coordinación.
-
-Las skills guardan instrucciones reutilizables; no son procesos que permanezcan trabajando. Un subagente puede aplicar una de esas skills en una revisión concreta. Los mejores puntos para ello son clarificación y validación, cuando una mirada independiente aporta valor.
-
-La coordinadora puede encargar una revisión independiente si el entorno lo permite o completarla localmente. Las fases mantienen sus dependencias. La guía está en [revisiones](skills/sdd-coordinador/references/revisiones.md).
-
-## Fuentes y adaptación
-
-El flujo toma como referencia [Hello SDD de MoureDev](https://github.com/mouredev/hello-sdd). El paquete mantiene requisitos identificados, diseño previo, pruebas de comportamiento y cambios comenzando en la spec.
-
-Referencia para el formato y descubrimiento de skills: [documentación oficial de OpenAI](https://learn.chatgpt.com/docs/build-skills).
-
-## Copias y reutilización
-
-`skills/` conserva las fuentes editables. El repositorio incluye una copia en `.claude/skills/` para Claude Code. Para utilizarlas en Codex, copia las nueve carpetas `sdd-*` a `~/.agents/skills/` en el equipo de destino, revisando antes cualquier skill existente con el mismo nombre.
-
-Después de editar una skill, sincroniza `.claude/skills/` y las copias personales instaladas; verifica por SHA-256 que coinciden con la fuente. Evita duplicar nombres de skills en distintos ámbitos de Codex. Comprueba su disponibilidad en la herramienta: la igualdad de archivos no demuestra que se hayan cargado. El [informe del toolkit](specs/000-sdd-toolkit/validation.md) recoge las comprobaciones realizadas y sus límites.
-
-## Proyectos previstos
-
-1. **FilePilot · CLI:** organización segura de archivos.
-2. **API Sentinel · CLI:** comprobación automatizada de APIs.
-3. **Freelance Desk · Web:** clientes, trabajos y presupuestos.
-4. **Pantry Pocket · Móvil:** despensa y compra sin conexión.
-5. **ReservaFlow · Web:** reservas y control de solapamientos.
-6. **FieldOps · Móvil y web:** intervenciones técnicas y sincronización.
-
-Los detalles, tecnologías definitivas y criterios de cada producto se concretarán en sus propias especificaciones. Las skills funcionan independientemente de esos seis dominios.
+El código se distribuye bajo la [licencia MIT](LICENSE).
